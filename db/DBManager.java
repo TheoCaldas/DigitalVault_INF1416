@@ -8,17 +8,17 @@ public class DBManager{
         return file.exists();
     } 
 
-    private static Connection connect(String databaseFileName) throws SQLException {  
+    public static Connection connect(String databaseFileName) throws SQLException {  
         String url = "jdbc:sqlite:" + databaseFileName;
         Connection conn = null;  
         conn = DriverManager.getConnection(url);  
+        conn.createStatement().execute("PRAGMA foreign_keys = ON");
         return conn;  
     }  
 
     public static Connection createNewDatabase(String fileName) throws SQLException{  
         Connection conn = connect(fileName);
         if (conn != null) {  
-            conn.createStatement().execute("PRAGMA foreign_keys = ON");
             DatabaseMetaData meta = conn.getMetaData();  
             System.out.println("The driver name is " + meta.getDriverName());  
             System.out.println("A new database has been created.");  
