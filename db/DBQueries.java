@@ -6,10 +6,13 @@ public class DBQueries {
     public static void main(String[] args) {  
         start();
         try{
-            insertKeys(123, "crt123.crt", "key123.key");
-            insertGroup(424, "admin");
-            insertUser(0, "user@email.com", "1415125125", "253124124", 123, 424);
-            selectAllUsers();
+            // insertKeys(123, "crt123.crt", "key123.key");
+            // insertGroup(424, "admin");
+            // insertUser(0, "user@email.com", "1415125125", "253124124", 123, 424);
+            // insertKeys(001, "crt001.crt", "key001.key");
+            // insertUser(1, "user2@email.com", "123124124124", "353535235232", 001, 424);
+            // selectAllUsers();
+            System.out.println(hasUsers());
         }catch(SQLException e){
             System.err.println(e.getMessage());
         }
@@ -108,5 +111,17 @@ public class DBQueries {
                 rs.getInt("gid") + "\t"
             );  
         }  
+    }
+
+    public static boolean hasUsers() throws SQLException{
+        Connection conn = DBManager.connect(dbName); 
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM usuario");
+
+        if (rs.next()) {
+            int count = rs.getInt(1);
+            return count > 0;
+        }
+        return false;
     }
 }
