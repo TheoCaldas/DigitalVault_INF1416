@@ -22,7 +22,9 @@ public class Main {
             System.out.println("LOGIN!");
         } else {
             // Cadastro admin
-            RawUser rawUser = SignUpManager.createRawUser();
+            while (!SignUpManager.singUp()){
+                System.out.println("\n\nCadastro não realizado. Tente novamente.\n");
+            };
         }
     }
 }

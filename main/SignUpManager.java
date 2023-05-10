@@ -1,12 +1,26 @@
 package DigitalVault_INF1416.main;
 
+import DigitalVault_INF1416.db.*;
+import java.security.cert.*;
+import java.sql.SQLException;
+import java.io.*;
+import java.util.Random;
 import java.util.Scanner;
+import java.util.regex.*;
 
 public class SignUpManager {
+    
+    private static String invalidEmail = "INVALID EMAIL";
+    private static String invalidCommonName = "INVALID COMMON NAME";
+    private static Scanner scanner;
 
-    static RawUser createRawUser() {
-        Scanner scanner = new Scanner(System.in);
+    public static boolean singUp(){
+        scanner = new Scanner(System.in);
+        RawUser user = createRawUser();
+        return saveUser(user);
+    }
 
+    private static RawUser createRawUser() {
         System.out.println("Nenhum usuário cadastrado, vamos criar o usuário admin :)");
 
         System.out.print("Caminho do arquivo do certificado digital: ");
@@ -58,11 +72,46 @@ public class SignUpManager {
             password
         );
 
-        scanner.close();
-
-        user.printUser();
-
+        // user.printUser();
+        // scanner.close();
         return user;
+    }
+
+    private static boolean saveUser(RawUser user){ 
+        X509Certificate cert;
+        try{
+            cert = getCertificate(user.crtPath);
+        }catch (Exception e){
+            System.err.println(e.getMessage());
+            System.err.println("Certificado Inválido");
+            return false;
+        }        
+
+        printCertificate(cert);
+        String email = extractEmail(cert.getSubjectX500Principal().toString());
+        if (email.equals(invalidEmail)){
+            System.err.println("Email Inválido");
+            return false;
+        }
+            
+        System.out.print("\nConfirma Dados (1 - Sim, 2 - Não): ");
+        String confirm = scanner.nextLine();
+
+        if (!confirm.equals("1")) return false;
+        
+        try {
+            if (DBQueries.emailAlreadyTaken(email)){
+                System.err.println("Email já cadastrado por outro usuário");
+                return false;
+            }
+            saveData(user, cert, email);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            System.err.println("Falha ao salvar no BD");
+            return false;
+        }
+        
+        return true;
     }
 
     private static boolean isPasswordValid(String password) {
@@ -76,7 +125,69 @@ public class SignUpManager {
                 break;
             }
         }
-        return (hasValidSize && hasOnlyDigits && hasNoEqualDigitsInSequence);
-                
+        return (hasValidSize && hasOnlyDigits && hasNoEqualDigitsInSequence);       
+    }
+
+    private static X509Certificate getCertificate(String path) throws CertificateException, IOException{
+        FileInputStream fis = new FileInputStream(path);
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        X509Certificate cert = (X509Certificate)cf.generateCertificate(fis);
+        fis.close();
+        return cert;
+    }
+
+    private static void printCertificate(X509Certificate cert){
+        System.out.println("\nCERTIFICATE INFO");
+        System.out.println("Version: " + cert.getVersion());
+        System.out.println("Serial number: " + cert.getSerialNumber());
+        System.out.println("Validity period: " + cert.getNotBefore() + " - " + cert.getNotAfter());
+        System.out.println("Algorithm: " + cert.getSigAlgName());
+
+        String issuer = cert.getIssuerX500Principal().toString();
+        String subject = cert.getSubjectX500Principal().toString();
+
+        System.out.println("Issuer (Common Name): " + extractCommonName(issuer));
+        System.out.println("Subject (Common Name): " + extractCommonName(subject));
+        System.out.println("Login Name (Subject Email): " + extractEmail(subject));
+    }
+
+    private static String extractEmail(String subject){
+        Pattern pattern = Pattern.compile("EMAILADDRESS=([^,]+)");
+        Matcher matcher = pattern.matcher(subject);
+        if (matcher.find())
+            return matcher.group(1);
+        return invalidEmail;
+    }
+
+    private static String extractCommonName(String subject){
+        Pattern pattern = Pattern.compile("CN=([^,]+)");
+        Matcher matcher = pattern.matcher(subject);
+        if (matcher.find())
+            return matcher.group(1);
+        return invalidCommonName;
+    }
+
+    private static void saveData(RawUser user, X509Certificate cert, String email) throws SQLException{
+        String crt = cert.toString();
+
+        //TO DO: get private key
+        String privateKey = user.privateKeyPath;
+
+        //TO DO: hash password
+        String hash = user.password;
+
+        //TO DO: create token with secret
+        String token = user.secret;
+
+        Random rand = new Random();
+        int kid = rand.nextInt();
+
+        rand = new Random();
+        int uid = rand.nextInt();
+
+        int gid = (user.group == RawUser.Group.ADM) ? DBQueries.adminGID : DBQueries.userGID;
+
+        DBQueries.insertKeys(kid, crt, privateKey);
+        DBQueries.insertUser(uid, email, hash, token, kid, gid);
     }
 }
