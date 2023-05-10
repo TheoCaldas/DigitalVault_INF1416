@@ -1,12 +1,21 @@
 package DigitalVault_INF1416.main;
 
 import DigitalVault_INF1416.db.*;
+
+import java.security.*;
 import java.security.cert.*;
+import java.security.spec.*;
+import javax.crypto.*;
+import javax.crypto.spec.*;
+
 import java.sql.SQLException;
 import java.io.*;
+import java.util.Base64;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.regex.*;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class SignUpManager {
     
@@ -78,6 +87,7 @@ public class SignUpManager {
     }
 
     private static boolean saveUser(RawUser user){ 
+        //acessar certificado
         X509Certificate cert;
         try{
             cert = getCertificate(user.crtPath);
@@ -87,6 +97,7 @@ public class SignUpManager {
             return false;
         }        
 
+        //confirmar dados
         printCertificate(cert);
         String email = extractEmail(cert.getSubjectX500Principal().toString());
         if (email.equals(invalidEmail)){
@@ -99,15 +110,41 @@ public class SignUpManager {
 
         if (!confirm.equals("1")) return false;
         
+        //verificar se email ja foi tomado
         try {
             if (DBQueries.emailAlreadyTaken(email)){
                 System.err.println("Email já cadastrado por outro usuário");
                 return false;
             }
-            saveData(user, cert, email);
         } catch (Exception e) {
             System.err.println(e.getMessage());
-            System.err.println("Falha ao salvar no BD");
+            return false;
+        }
+
+        //acessar chave privada
+        PrivateKey privateKey;
+        try{
+            privateKey = getPrivateKey(user.privateKeyPath, user.secret);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            System.err.println("Chave Privada Inválida");
+            return false;
+        }
+
+        //TO DO: validar chave privada e certificado
+        
+        //TO DO: hash password
+        String hash = user.password;
+
+        //TO DO: create token
+        String token = user.secret;
+
+        //salvar tudo no BD
+        try {
+            saveData(email, hash, privateKey, token, user.group, cert);
+        } catch (Exception er) {
+            System.err.println(er.getMessage());
+            System.err.println("Falha ao a BD");
             return false;
         }
         
@@ -167,17 +204,49 @@ public class SignUpManager {
         return invalidCommonName;
     }
 
-    private static void saveData(RawUser user, X509Certificate cert, String email) throws SQLException{
+    //TO DO: corrigir bug de Wrong key size
+    private static PrivateKey getPrivateKey(String path, String secret) throws 
+    IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
+     IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
+
+        Security.addProvider(new BouncyCastleProvider());
+    
+
+        //read encrypted private key in path
+        FileInputStream fis = new FileInputStream(path);
+        byte[] encryptedKeyBytes = new byte[fis.available()];
+        fis.read(encryptedKeyBytes);
+        fis.close();
+
+        //generate secretKey with PRNG and secret string
+        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+        random.setSeed(secret.getBytes());
+        byte[] keyBytes = new byte[7];
+        random.nextBytes(keyBytes);
+        SecretKey secretKey = new SecretKeySpec(keyBytes, "DES");
+
+        //decrypt private key with secretKey
+        Cipher cipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+        byte[] decryptedKeyBytes = cipher.doFinal(encryptedKeyBytes);
+
+        //decode base64
+        byte[] privateKeyBytes = Base64.getDecoder().decode(decryptedKeyBytes);
+
+        //use key spec and key factory to get final private key
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        PrivateKey privateKey = keyFactory.generatePrivate(keySpec);
+
+        return privateKey;
+    }
+
+    private static void saveData(String email, String hash, PrivateKey privateKey, String token, 
+    RawUser.Group group, X509Certificate cert) throws SQLException{
+
+        //TO DO: Ver qual forma correta de armazenar pk e crt
         String crt = cert.toString();
-
-        //TO DO: get private key
-        String privateKey = user.privateKeyPath;
-
-        //TO DO: hash password
-        String hash = user.password;
-
-        //TO DO: create token with secret
-        String token = user.secret;
+        String pk = privateKey.toString();
 
         Random rand = new Random();
         int kid = rand.nextInt();
@@ -185,9 +254,9 @@ public class SignUpManager {
         rand = new Random();
         int uid = rand.nextInt();
 
-        int gid = (user.group == RawUser.Group.ADM) ? DBQueries.adminGID : DBQueries.userGID;
+        int gid = (group == RawUser.Group.ADM) ? DBQueries.adminGID : DBQueries.userGID;
 
-        DBQueries.insertKeys(kid, crt, privateKey);
+        DBQueries.insertKeys(kid, crt, pk);
         DBQueries.insertUser(uid, email, hash, token, kid, gid);
     }
 }
