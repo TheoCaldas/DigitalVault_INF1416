@@ -6,12 +6,9 @@ import java.security.*;
 import java.security.cert.*;
 import java.security.spec.*;
 import javax.crypto.*;
-import javax.crypto.spec.*;
 
 import java.sql.SQLException;
 import java.io.*;
-import java.nio.file.Paths;
-import java.nio.file.Files;
 import java.util.Base64;
 import java.util.Random;
 import java.util.Scanner;
@@ -83,8 +80,6 @@ public class SignUpManager {
             password
         );
 
-        // user.printUser();
-        // scanner.close();
         return user;
     }
 
@@ -133,8 +128,16 @@ public class SignUpManager {
             return false;
         }
 
-        //TO DO: validar chave privada e certificado
-        
+        try {
+            if (!validateKeys(cert, privateKey)){
+                System.err.println("Chave privada não compatível com certificado!");
+                return false;
+            }
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return false;
+        } 
+            
         //TO DO: hash password
         String hash = user.password;
 
@@ -264,5 +267,24 @@ public class SignUpManager {
 
         DBQueries.insertKeys(kid, crt, pk);
         DBQueries.insertUser(uid, email, hash, token, kid, gid);
+    }
+
+    private static boolean validateKeys(X509Certificate cert, PrivateKey privateKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException{
+        PublicKey publicKey = cert.getPublicKey();
+
+        //Generate random bytes
+        byte[] randomBytes = new byte[2048];
+		SecureRandom.getInstanceStrong().nextBytes(randomBytes);
+
+        //Sign with private key
+		Signature signature = Signature.getInstance("SHA1withRSA");
+		signature.initSign(privateKey);
+		signature.update(randomBytes);
+		byte[] signedBytes = signature.sign();
+
+        //Verify with public key
+        signature.initVerify(publicKey);
+		signature.update(randomBytes);
+        return signature.verify(signedBytes);
     }
 }

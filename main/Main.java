@@ -20,6 +20,9 @@ public class Main {
         if(hasUsers) {
             // TO DO: pede o login
             System.out.println("LOGIN!");
+
+            //teste
+            // SignUpManager.singUp();
         } else {
             // Cadastro admin
             while (!SignUpManager.singUp()){
