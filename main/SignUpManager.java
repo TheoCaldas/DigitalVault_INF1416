@@ -129,6 +129,7 @@ public class SignUpManager {
             return false;
         }
 
+        //validar chave com certificado
         try {
             if (!validateKeys(cert, privateKey)){
                 System.err.println("Chave privada não compatível com certificado!");
@@ -139,10 +140,18 @@ public class SignUpManager {
             return false;
         } 
         
+        //hash da senha
         String hash = hashPassword(user.password);
 
-        //TO DO: create token
-        String token = user.secret;
+        //gerar token criptado pela senha
+        String token;
+        try {
+            token = generateToken(user.password);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            System.err.println("Falha ao gerar token!");
+            return false;
+        } 
 
         //salvar tudo no BD
         try {
@@ -295,5 +304,27 @@ public class SignUpManager {
         String encodedSalt = Base64.getEncoder().encodeToString(salt);
         String encodedHash = Base64.getEncoder().encodeToString(hash.getBytes());
         return "$2y$12$" + encodedSalt + encodedHash;
+    }
+
+    private static String generateToken(String password) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException{
+        //Gen token
+        final byte[] token = new byte[16];
+        new SecureRandom().nextBytes(token);
+
+        //Gen key with password
+        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+        random.setSeed(password.getBytes());
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("DES");
+        keyGenerator.init(56, random);
+		SecretKey secretKey = keyGenerator.generateKey();
+
+        //Encrypt token with key
+        Cipher cipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+        byte[] encryptedToken = cipher.doFinal(token);
+
+        //Encode token
+        String encodedToken = Base64.getEncoder().encodeToString(encryptedToken);
+        return encodedToken;
     }
 }
