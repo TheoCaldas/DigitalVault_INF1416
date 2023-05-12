@@ -10,6 +10,8 @@ import javax.crypto.spec.*;
 
 import java.sql.SQLException;
 import java.io.*;
+import java.nio.file.Paths;
+import java.nio.file.Files;
 import java.util.Base64;
 import java.util.Random;
 import java.util.Scanner;
@@ -204,14 +206,12 @@ public class SignUpManager {
         return invalidCommonName;
     }
 
-    //TO DO: corrigir bug de Wrong key size
     private static PrivateKey getPrivateKey(String path, String secret) throws 
     IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
      IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
 
         Security.addProvider(new BouncyCastleProvider());
     
-
         //read encrypted private key in path
         FileInputStream fis = new FileInputStream(path);
         byte[] encryptedKeyBytes = new byte[fis.available()];
@@ -221,20 +221,26 @@ public class SignUpManager {
         //generate secretKey with PRNG and secret string
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
         random.setSeed(secret.getBytes());
-        byte[] keyBytes = new byte[7];
-        random.nextBytes(keyBytes);
-        SecretKey secretKey = new SecretKeySpec(keyBytes, "DES");
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("DES");
+        keyGenerator.init(56, random);
+		SecretKey secretKey = keyGenerator.generateKey();
 
         //decrypt private key with secretKey
         Cipher cipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
         cipher.init(Cipher.DECRYPT_MODE, secretKey);
         byte[] decryptedKeyBytes = cipher.doFinal(encryptedKeyBytes);
 
+        //remove headers
+        String encodedPK = new String(decryptedKeyBytes);
+        encodedPK = encodedPK.replace("-----BEGIN PRIVATE KEY-----", "");
+        encodedPK = encodedPK.replace("-----END PRIVATE KEY-----", "");
+        encodedPK = encodedPK.replace("\n", "");
+
         //decode base64
-        byte[] privateKeyBytes = Base64.getDecoder().decode(decryptedKeyBytes);
+        byte[] decodedPK = Base64.getDecoder().decode(encodedPK);
 
         //use key spec and key factory to get final private key
-        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decodedPK);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         PrivateKey privateKey = keyFactory.generatePrivate(keySpec);
 

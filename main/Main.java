@@ -25,6 +25,7 @@ public class Main {
             while (!SignUpManager.singUp()){
                 System.out.println("\n\nCadastro não realizado. Tente novamente.\n");
             };
+            System.out.println("\n\nCadastro realizado!\n");
         }
     }
 }
