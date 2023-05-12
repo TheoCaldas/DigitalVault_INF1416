@@ -23,15 +23,26 @@ public class SignUpManager {
     private static String invalidCommonName = "INVALID COMMON NAME";
     private static Scanner scanner;
 
-    public static boolean singUp(){
+    public static void singUp(){
         scanner = new Scanner(System.in);
-        RawUser user = createRawUser();
-        return saveUser(user);
+        while (true){
+            System.out.println("======TELA DE CADASTRO======");
+            
+            System.out.print("Digite 1 para iniciar cadastro - Digite 2 para voltar: ");
+            String option = scanner.nextLine();
+
+            if (option.equals("2")) break;
+
+            RawUser user = createRawUser();
+            if (saveUser(user)){
+                System.out.println("\n\nCadastro realizado!\n");
+                break;
+            }else
+                System.out.println("\n\nCadastro não realizado. Tente novamente.\n");
+        }
     }
 
     private static RawUser createRawUser() {
-        System.out.println("Nenhum usuário cadastrado, vamos criar o usuário admin :)");
-
         System.out.print("Caminho do arquivo do certificado digital: ");
         String certDig = scanner.nextLine();
 

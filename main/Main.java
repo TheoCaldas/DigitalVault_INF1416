@@ -25,10 +25,7 @@ public class Main {
             // SignUpManager.singUp();
         } else {
             // Cadastro admin
-            while (!SignUpManager.singUp()){
-                System.out.println("\n\nCadastro não realizado. Tente novamente.\n");
-            };
-            System.out.println("\n\nCadastro realizado!\n");
+            SignUpManager.singUp();
         }
     }
 }
