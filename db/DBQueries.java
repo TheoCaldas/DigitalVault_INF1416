@@ -16,7 +16,8 @@ public class DBQueries {
             // insertUser(0, "user@email.com", "1415125125", "253124124", 123, 424);
             // insertKeys(001, "crt001.crt", "key001.key");
             // insertUser(1, "user2@email.com", "123124124124", "353535235232", 001, 424);
-            selectAll();
+            // selectAll();
+            selectAllUsers();
             // System.out.println(hasUsers());
         }catch(SQLException e){
             System.err.println(e.getMessage());

@@ -14,6 +14,7 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.regex.*;
 
+import org.bouncycastle.crypto.generators.OpenBSDBCrypt;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class SignUpManager {
@@ -137,9 +138,8 @@ public class SignUpManager {
             System.err.println(e.getMessage());
             return false;
         } 
-            
-        //TO DO: hash password
-        String hash = user.password;
+        
+        String hash = hashPassword(user.password);
 
         //TO DO: create token
         String token = user.secret;
@@ -273,7 +273,7 @@ public class SignUpManager {
         PublicKey publicKey = cert.getPublicKey();
 
         //Generate random bytes
-        byte[] randomBytes = new byte[2048];
+        byte[] randomBytes = new byte[4096];
 		SecureRandom.getInstanceStrong().nextBytes(randomBytes);
 
         //Sign with private key
@@ -286,5 +286,14 @@ public class SignUpManager {
         signature.initVerify(publicKey);
 		signature.update(randomBytes);
         return signature.verify(signedBytes);
+    }
+
+    private static String hashPassword(String password){
+        final byte[] salt = new byte[16];
+        new SecureRandom().nextBytes(salt);
+        String hash = OpenBSDBCrypt.generate(password.getBytes(), salt, 12);
+        String encodedSalt = Base64.getEncoder().encodeToString(salt);
+        String encodedHash = Base64.getEncoder().encodeToString(hash.getBytes());
+        return "$2y$12$" + encodedSalt + encodedHash;
     }
 }
