@@ -12,15 +12,11 @@ import java.io.*;
 import java.util.Base64;
 import java.util.Random;
 import java.util.Scanner;
-import java.util.regex.*;
 
 import org.bouncycastle.crypto.generators.OpenBSDBCrypt;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class SignUpManager {
-    
-    private static String invalidEmail = "INVALID EMAIL";
-    private static String invalidCommonName = "INVALID COMMON NAME";
     private static Scanner scanner;
 
     public static void singUp(){
@@ -33,7 +29,7 @@ public class SignUpManager {
 
             if (option.equals("2")) break;
 
-            RawUser user = createRawUser();
+            TempUser user = createRawUser();
             if (saveUser(user)){
                 System.out.println("\n\nCadastro realizado!\n");
                 break;
@@ -42,7 +38,7 @@ public class SignUpManager {
         }
     }
 
-    private static RawUser createRawUser() {
+    private static TempUser createRawUser() {
         System.out.print("Caminho do arquivo do certificado digital: ");
         String certDig = scanner.nextLine();
 
@@ -54,7 +50,7 @@ public class SignUpManager {
 
         System.out.print("Grupo(1 - Administrador, 2 - Usuário): ");
         String group_string = scanner.nextLine();
-        RawUser.Group group = group_string.equals("1") ? RawUser.Group.ADM : RawUser.Group.USR;
+        TempUser.Group group = group_string.equals("1") ? TempUser.Group.ADM : TempUser.Group.USR;
         
         System.out.print("Senha pessoal: ");
         String password = scanner.nextLine();
@@ -84,7 +80,7 @@ public class SignUpManager {
             password_conf = scanner.nextLine();
         }
 
-        RawUser user = new RawUser(
+        TempUser user = new TempUser(
             certDig, 
             privateKey, 
             secret, 
@@ -95,11 +91,11 @@ public class SignUpManager {
         return user;
     }
 
-    private static boolean saveUser(RawUser user){ 
+    private static boolean saveUser(TempUser user){ 
         //acessar certificado
         X509Certificate cert;
         try{
-            cert = getCertificate(user.crtPath);
+            cert = CertificateManager.getCertificate(user.crtPath);
         }catch (Exception e){
             System.err.println(e.getMessage());
             System.err.println("Certificado Inválido");
@@ -107,9 +103,9 @@ public class SignUpManager {
         }        
 
         //confirmar dados
-        printCertificate(cert);
-        String email = extractEmail(cert.getSubjectX500Principal().toString());
-        if (email.equals(invalidEmail)){
+        CertificateManager.printCertificate(cert);
+        String email = CertificateManager.extractEmail(cert.getSubjectX500Principal().toString());
+        if (email.equals(CertificateManager.INVALID_EMAIL)){
             System.err.println("Email Inválido");
             return false;
         }
@@ -190,45 +186,6 @@ public class SignUpManager {
         return (hasValidSize && hasOnlyDigits && hasNoEqualDigitsInSequence);       
     }
 
-    private static X509Certificate getCertificate(String path) throws CertificateException, IOException{
-        FileInputStream fis = new FileInputStream(path);
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        X509Certificate cert = (X509Certificate)cf.generateCertificate(fis);
-        fis.close();
-        return cert;
-    }
-
-    private static void printCertificate(X509Certificate cert){
-        System.out.println("\nCERTIFICATE INFO");
-        System.out.println("Version: " + cert.getVersion());
-        System.out.println("Serial number: " + cert.getSerialNumber());
-        System.out.println("Validity period: " + cert.getNotBefore() + " - " + cert.getNotAfter());
-        System.out.println("Algorithm: " + cert.getSigAlgName());
-
-        String issuer = cert.getIssuerX500Principal().toString();
-        String subject = cert.getSubjectX500Principal().toString();
-
-        System.out.println("Issuer (Common Name): " + extractCommonName(issuer));
-        System.out.println("Subject (Common Name): " + extractCommonName(subject));
-        System.out.println("Login Name (Subject Email): " + extractEmail(subject));
-    }
-
-    private static String extractEmail(String subject){
-        Pattern pattern = Pattern.compile("EMAILADDRESS=([^,]+)");
-        Matcher matcher = pattern.matcher(subject);
-        if (matcher.find())
-            return matcher.group(1);
-        return invalidEmail;
-    }
-
-    private static String extractCommonName(String subject){
-        Pattern pattern = Pattern.compile("CN=([^,]+)");
-        Matcher matcher = pattern.matcher(subject);
-        if (matcher.find())
-            return matcher.group(1);
-        return invalidCommonName;
-    }
-
     private static PrivateKey getPrivateKey(String path, String secret) throws 
     IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
      IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
@@ -271,7 +228,7 @@ public class SignUpManager {
     }
 
     private static void saveData(String email, String hash, PrivateKey privateKey, String token, 
-    RawUser.Group group, X509Certificate cert) throws SQLException{
+    TempUser.Group group, X509Certificate cert) throws SQLException{
 
         //TO DO: Ver qual forma correta de armazenar pk e crt
         String crt = cert.toString();
@@ -283,7 +240,7 @@ public class SignUpManager {
         rand = new Random();
         int uid = rand.nextInt();
 
-        int gid = (group == RawUser.Group.ADM) ? DBQueries.adminGID : DBQueries.userGID;
+        int gid = (group == TempUser.Group.ADM) ? DBQueries.adminGID : DBQueries.userGID;
 
         DBQueries.insertKeys(kid, crt, pk);
         DBQueries.insertUser(uid, email, hash, token, kid, gid);

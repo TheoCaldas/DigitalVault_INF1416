@@ -1,6 +1,6 @@
 package DigitalVault_INF1416.main;
 
-public class RawUser {
+public class TempUser {
 
     public enum Group {
         ADM,
@@ -13,7 +13,7 @@ public class RawUser {
     Group group;
     String password;
 
-    public RawUser(String certDig, String privateKey, String secret, Group group, String password) {
+    public TempUser(String certDig, String privateKey, String secret, Group group, String password) {
         this.crtPath = certDig;
         this.privateKeyPath = privateKey;
         this.secret = secret;
