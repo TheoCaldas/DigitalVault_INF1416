@@ -1,4 +1,4 @@
-package DigitalVault_INF1416.main;
+// package DigitalVault_INF1416.main;a
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,30 +41,21 @@ public class PasswordManager {
     }
 
     public static void passwordInput() {
-        PasswordCombination[] keyboardCharactersOutput = PasswordManager.createPasswordKeyboard();
-        Character[] keyboarCharcatersInput = {'a', 'b', 'c', 'd', 'e'};
-
-        Map<Character, PasswordCombination> keyboard = new HashMap<Character, PasswordCombination>();
-        for (int i = 0; i < keyboarCharcatersInput.length; i++) {
-            Character input = keyboarCharcatersInput[i];
-            PasswordCombination output = keyboardCharactersOutput[i];
-            keyboard.put(input, output);
-        }
-
-        for (Map.Entry<Character, PasswordCombination> entry : keyboard.entrySet()) {
-            Character key = entry.getKey();
-            PasswordCombination value = entry.getValue();
-            System.out.println("(" + key + ") -> " + "|" + value.dig1 + " " + value.dig2 +  "|");
-        }
-
         System.out.println("Insira sua senha: ( 'a', 'b', 'c', 'd', 'e' para escolher o campo e 'q' para submeter");
-
         Character[] possibleInputs = {'a', 'b', 'c', 'd', 'e', 'q'};
         Scanner scanner = new Scanner(System.in);
         Character input = ' ';
         ArrayList<PasswordCombination> userPassword = new ArrayList<PasswordCombination>();
 
-        while (input != 'q') {
+        while(true) {
+            Map<Character, PasswordCombination> keyboard = PasswordManager.createPasswordKeyboard();
+
+            for (Map.Entry<Character, PasswordCombination> entry : keyboard.entrySet()) {
+                Character key = entry.getKey();
+                PasswordCombination value = entry.getValue();
+                System.out.println("(" + key + ") -> " + "|" + value.dig1 + " " + value.dig2 +  "|");
+            }
+
             input = scanner.next().charAt(0);
             boolean isValidInput = false;
 
@@ -75,19 +66,23 @@ public class PasswordManager {
             }
 
             if(isValidInput) {
+                if (input.equals('q')) break;
                 PasswordCombination passComb = keyboard.get(input);
                 userPassword.add(passComb);
             } else {
                 System.out.println("Entrada Inválida!!! Somente 'a', 'b', 'c', 'd', 'e' ou 'q'");
             }
+        };
+    
+        for(PasswordCombination comb : userPassword) {
+            System.out.println(comb.dig1.toString() + "-" + comb.dig2.toString());
         }
-
-        String[] passwords = PasswordManager.createAllPasswordsCombinations(userPassword);
-        System.out.println(Arrays.toString(passwords));
+        // String[] passwords = PasswordManager.createAllPasswordsCombinations(userPassword);
+        // System.out.println(Arrays.toString(passwords));
 
     }
 
-    public static PasswordCombination[] createPasswordKeyboard() {
+    public static Map<Character, PasswordCombination> createPasswordKeyboard() {
         ArrayList<Character> digits = new ArrayList<Character>();
         char[] charDigits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
         for (int i = 0; i < 10; i++) {
@@ -103,7 +98,17 @@ public class PasswordManager {
             passwordKeyboard[i] = pc;
         }
 
-        return passwordKeyboard;
+        Character[] keyboardCharcatersInput = {'a', 'b', 'c', 'd', 'e'};
+
+        Map<Character, PasswordCombination> keyboard = new HashMap<Character, PasswordCombination>();
+        for (int i = 0; i < keyboardCharcatersInput.length; i++) {
+            Character input = keyboardCharcatersInput[i];
+            PasswordCombination output = passwordKeyboard[i];
+            keyboard.put(input, output);
+        }
+
+
+        return keyboard;
     }
 
     public static String[] createAllPasswordsCombinations(List<PasswordCombination> rawPassword) {
