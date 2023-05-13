@@ -1,4 +1,4 @@
-// package DigitalVault_INF1416.main;a
+// package DigitalVault_INF1416.main;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -92,6 +92,7 @@ public class PasswordManager {
     
         String[] passwords = PasswordManager.createAllPasswordsCombinations(userPassword);
         System.out.println(Arrays.toString(passwords));
+        // System.out.println(passwords.length);
     }
 
     public static Map<Character, PasswordCombination> createPasswordKeyboard() {
@@ -129,7 +130,7 @@ public class PasswordManager {
         // PasswordNode.printTree(passTree, rawPassword.size());
 
         ArrayList<ArrayList<Character>> paths = findAllPaths(passTree);
-        
+
         String[] passwords = new String[paths.size()];
         for (int i = 0; i < paths.size(); i++) {
             ArrayList<Character> passwordArray = paths.get(i);
