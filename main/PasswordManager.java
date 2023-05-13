@@ -38,6 +38,22 @@ public class PasswordManager {
             this.dir = dir;
             this.esq = esq;
         }
+
+        private static void printTree(PasswordNode node, int h) {
+            if (node == null) {
+                return;
+            }
+    
+            printTree(node.dir, h + 1);
+    
+            for (int i = 0; i < h; i++) {
+                System.out.print("    ");
+            }
+    
+            System.out.println(node.value);
+    
+            printTree(node.esq, h + 1);
+        }
     }
 
     public static void passwordInput() {
@@ -74,12 +90,8 @@ public class PasswordManager {
             }
         };
     
-        for(PasswordCombination comb : userPassword) {
-            System.out.println(comb.dig1.toString() + "-" + comb.dig2.toString());
-        }
-        // String[] passwords = PasswordManager.createAllPasswordsCombinations(userPassword);
-        // System.out.println(Arrays.toString(passwords));
-
+        String[] passwords = PasswordManager.createAllPasswordsCombinations(userPassword);
+        System.out.println(Arrays.toString(passwords));
     }
 
     public static Map<Character, PasswordCombination> createPasswordKeyboard() {
@@ -111,71 +123,69 @@ public class PasswordManager {
         return keyboard;
     }
 
-    public static String[] createAllPasswordsCombinations(List<PasswordCombination> rawPassword) {
-        PasswordNode passTree = new PasswordNode('#');
-        passTree = createLeftTree(passTree, 0, rawPassword);
-        passTree = createRightTree(passTree, 0, rawPassword);
+    public static String[] createAllPasswordsCombinations(ArrayList<PasswordCombination> rawPassword) {
+        PasswordNode passTree = new PasswordNode('@');
+        addNodes(passTree, rawPassword, 0);
+        // PasswordNode.printTree(passTree, rawPassword.size());
 
-        List<List<Character>> paths = allPaths(passTree);
-
-        String[] pathStrings = new String[paths.size()];
+        ArrayList<ArrayList<Character>> paths = findAllPaths(passTree);
+        
+        String[] passwords = new String[paths.size()];
         for (int i = 0; i < paths.size(); i++) {
+            ArrayList<Character> passwordArray = paths.get(i);
+            passwordArray.remove(0);
+
             StringBuilder sb = new StringBuilder();
-            for (char c : paths.get(i)) {
+            for (Character c : passwordArray) {
                 sb.append(c);
             }
-            pathStrings[i] = sb.toString();
+
+            passwords[i] = sb.toString();
+
         }
 
-        return pathStrings;
+        return passwords;
     }
 
-    public static PasswordNode createLeftTree(PasswordNode node, int h, List<PasswordCombination> rawPassword) {
-        if(h == rawPassword.size()) {
-            return node;
+    public static void addNodes(PasswordNode node, ArrayList<PasswordCombination> rawPassword, int h) {
+        if(h >= rawPassword.size()) {
+            return;
         } else {
-            Character dig1 = rawPassword.get(h).dig1;
-            node.value = dig1;
-            node.esq = createLeftTree(node.esq, h, rawPassword);
-            return node.esq;
+            PasswordCombination passComb = rawPassword.get(h);
+            PasswordNode dirNode = new PasswordNode(passComb.dig1);
+            PasswordNode esqNode = new PasswordNode(passComb.dig2);
+            
+            node.dir = dirNode;
+            addNodes(node.dir, rawPassword, h + 1);
+
+            node.esq = esqNode;
+            addNodes(node.esq, rawPassword, h + 1);
         }
     }
 
-    public static PasswordNode createRightTree(PasswordNode node, int h, List<PasswordCombination> rawPassword) {
-        if(h == rawPassword.size()) {
-            return node;
-        } else {
-            Character dig1 = rawPassword.get(h).dig2;
-            node.value = dig1;
-            node.dir = createRightTree(node.dir, h + 1, rawPassword);
-            return node.dir;
-        }
-    }
-    
-    public static List<List<Character>> allPaths(PasswordNode root) {
-        List<List<Character>> paths = new ArrayList<>();
+    public static ArrayList<ArrayList<Character>> findAllPaths(PasswordNode root) {
+        ArrayList<ArrayList<Character>> paths = new ArrayList<ArrayList<Character>>();
         if (root == null) {
             return paths;
         }
-        List<Character> currentPath = new ArrayList<>();
+        ArrayList<Character> currentPath = new ArrayList<Character>();
         dfs(root, currentPath, paths);
         return paths;
     }
     
-    private static void dfs(PasswordNode node, List<Character> currentPath, List<List<Character>> paths) {
+    private static void dfs(PasswordNode node, ArrayList<Character> currentPath, ArrayList<ArrayList<Character>> paths) {
+        if (node == null) return;
+
         currentPath.add(node.value);
+        
         if (node.esq == null && node.dir == null) {
-            paths.add(new ArrayList<>(currentPath));
+            paths.add(new ArrayList<Character>(currentPath));
         } else {
-            if (node.esq != null) {
-                dfs(node.esq, currentPath, paths);
-            }
-            if (node.dir != null) {
-                dfs(node.dir, currentPath, paths);
-            }
+            dfs(node.esq, currentPath, paths);
+            dfs(node.dir, currentPath, paths);
         }
         currentPath.remove(currentPath.size() - 1);
     }
-    
+
 
 }
