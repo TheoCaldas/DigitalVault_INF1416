@@ -18,11 +18,7 @@ public class Main {
         }
 
         if(hasUsers) {
-            // TO DO: pede o login
-            System.out.println("LOGIN!");
-
-            //teste
-            // SignUpManager.singUp();
+            LoginManager.login();
         } else {
             // Cadastro admin
             System.out.println("Nenhum usuário! Por favor, cadestre o administrador.");

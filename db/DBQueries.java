@@ -177,18 +177,30 @@ public class DBQueries {
         return false;
     }
 
-    public static boolean emailAlreadyTaken(String email) throws SQLException{
+    private static ResultSet selectUserByEmail(String email) throws SQLException{
         Connection conn = getCurrentConnection();
 
-        String query = "SELECT COUNT(*) FROM usuario WHERE email = ?";
+        String query = "SELECT * FROM usuario WHERE email = ?";
         PreparedStatement stmt = conn.prepareStatement(query);
         stmt.setString(1, email);
         
-        ResultSet rs = stmt.executeQuery();
-        int count = rs.getInt(1);
-        
-        return (count > 0);
+        return stmt.executeQuery();
     }
 
+    private static boolean isEmptyResult(ResultSet rs) throws SQLException{
+        return !rs.next();
+    }
 
+    public static boolean emailAlreadyTaken(String email) throws SQLException{
+        ResultSet rs = selectUserByEmail(email);
+        return !isEmptyResult(rs);
+    }
+
+    //returns user if exists, null otherwise
+    public static User selectUser(String email) throws SQLException{
+        ResultSet rs = selectUserByEmail(email);
+        if (isEmptyResult(rs))
+            return null;
+        return new User(rs);
+    }
 }
