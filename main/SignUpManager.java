@@ -132,7 +132,7 @@ public class SignUpManager {
             privateKey = getPrivateKey(user.privateKeyPath, user.secret);
         } catch (Exception e) {
             System.err.println(e.getMessage());
-            System.err.println("Chave Privada Inválida");
+            System.err.println("Caminho para chave privada inválido OU frase secreta errada!");
             return false;
         }
 
@@ -240,7 +240,7 @@ public class SignUpManager {
         rand = new Random();
         int uid = rand.nextInt();
 
-        int gid = (group == TempUser.Group.ADM) ? DBQueries.adminGID : DBQueries.userGID;
+        int gid = (group == TempUser.Group.ADM) ? DBQueries.ADMIN_GID : DBQueries.USER_GID;
 
         DBQueries.insertKeys(kid, crt, pk);
         DBQueries.insertUser(uid, email, hash, token, kid, gid);

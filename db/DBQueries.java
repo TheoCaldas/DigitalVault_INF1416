@@ -3,22 +3,17 @@ import java.sql.*;
 
 public class DBQueries {
     private static final String dbName = "cofredigital.db";
-    public static final int adminGID = 0;
-    public static final int userGID = 1;
+    public static final int ADMIN_GID = 0;
+    public static final int USER_GID = 1;
+    public static final String NOT_BLOCKED = "no";
 
     private static Connection conn;
 
     public static void main(String[] args) {  
         start();
         try{
-            // insertKeys(123, "crt123.crt", "key123.key");
-            // insertGroup(424, "admin");
-            // insertUser(0, "user@email.com", "1415125125", "253124124", 123, 424);
-            // insertKeys(001, "crt001.crt", "key001.key");
-            // insertUser(1, "user2@email.com", "123124124124", "353535235232", 001, 424);
-            // selectAll();
-            selectAllUsers();
-            // System.out.println(hasUsers());
+            selectAll();
+            // selectAllUsers();
         }catch(SQLException e){
             System.err.println(e.getMessage());
         }
@@ -28,8 +23,8 @@ public class DBQueries {
         if (!DBManager.exists(dbName)){ //does not exist
             try {
                 createDB();
-                insertGroup(adminGID, "admin");
-                insertGroup(userGID, "user");
+                insertGroup(ADMIN_GID, "admin");
+                insertGroup(USER_GID, "user");
             }
             catch (SQLException e){
                 System.err.println(e.getMessage()); 
@@ -71,6 +66,7 @@ public class DBQueries {
                 + " email text,\n"  
                 + " hash text,\n"  
                 + " token text,\n" 
+                + " blocked text,\n"
                 + " kid integer,\n"  
                 + " gid integer,\n"  
                 + " FOREIGN KEY (kid) REFERENCES chaveiro(kid),\n" 
@@ -99,24 +95,25 @@ public class DBQueries {
     }
     
     public static void insertUser(int uid, String email, String hash, String token, int kid, int gid) throws SQLException{
-        String sql = "INSERT INTO usuario(uid, email, hash, token, kid, gid) VALUES(?,?,?,?,?,?)";  
+        String sql = "INSERT INTO usuario(uid, email, hash, token, blocked, kid, gid) VALUES(?,?,?,?,?,?,?)";  
         Connection conn = getCurrentConnection();
         PreparedStatement pstmt = conn.prepareStatement(sql);  
         pstmt.setInt(1, uid);  
         pstmt.setString(2, email); 
         pstmt.setString(3, hash);  
         pstmt.setString(4, token);
-        pstmt.setInt(5, kid);  
-        pstmt.setInt(6, gid); 
+        pstmt.setString(5, NOT_BLOCKED);
+        pstmt.setInt(6, kid);  
+        pstmt.setInt(7, gid); 
         pstmt.executeUpdate();  
     }
 
     public static void selectAll() throws SQLException{
-        System.out.println("\nGRUPOS:");
+        System.out.println("\n=======GRUPOS=======\n");
         selectAllGroups();
-        System.out.println("\nCHAVEIROS:");
+        System.out.println("\n=======CHAVEIROS=======\n");
         selectAllKeys();
-        System.out.println("\nUSUARIOS:");
+        System.out.println("\n=======USUARIOS=======\n");
         selectAllUsers();
     }
 
@@ -125,16 +122,17 @@ public class DBQueries {
         Connection conn = getCurrentConnection();
         Statement stmt = conn.createStatement();  
         ResultSet rs = stmt.executeQuery(sql);
-        System.out.println("UID\tEMAIL\tHASH\tTOKEN\tKID\tGID\t");  
         while (rs.next()) {  
             System.out.println(
-                rs.getInt("uid") + "\t" +   
-                rs.getString("email") + "\t" +  
-                rs.getString("hash") + "\t" +
-                rs.getString("token") + "\t" +
-                rs.getInt("kid") + "\t" +
-                rs.getInt("gid") + "\t"
+                "UID: " + rs.getInt("uid") + "\n" +   
+                "EMAIL: " + rs.getString("email") + "\n" +  
+                "HASH: " + rs.getString("hash") + "\n" +
+                "TOKEN: " + rs.getString("token") + "\n" +
+                "BLOCKED: " + rs.getString("blocked") + "\n" +
+                "KID: " + rs.getInt("kid") + "\n" +
+                "GID: " + rs.getInt("gid") + "\n"
             );  
+            System.out.println("---------------------------"); 
         }  
     }
 
@@ -143,13 +141,13 @@ public class DBQueries {
         Connection conn = getCurrentConnection();
         Statement stmt = conn.createStatement();  
         ResultSet rs = stmt.executeQuery(sql);
-        System.out.println("KID\tCERTIFICATE\tPRIVATE_KEY");  
         while (rs.next()) {  
             System.out.println(
-                rs.getInt("kid") + "\t" +   
-                rs.getString("crt") + "\t" +  
-                rs.getString("privatekey") + "\t"
+                "KID: " + rs.getInt("kid") + "\n" +   
+                "CERTIFICATE: " + rs.getString("crt") + "\n" +  
+                "PRIVATE_KEY: " + rs.getString("privatekey") + "\n"
             );  
+            System.out.println("---------------------------"); 
         }  
     }
 
@@ -158,12 +156,12 @@ public class DBQueries {
         Connection conn = getCurrentConnection();
         Statement stmt = conn.createStatement();  
         ResultSet rs = stmt.executeQuery(sql);
-        System.out.println("GID\tGROUPNAME");  
         while (rs.next()) {  
             System.out.println(
-                rs.getInt("gid") + "\t" +   
-                rs.getString("groupname") + "\t"
+                "GID: " + rs.getInt("gid") + "\n" +   
+                "GROUP_NAME: " + rs.getString("groupname") + "\n"
             );  
+            System.out.println("---------------------------"); 
         }  
     }
 

@@ -25,6 +25,7 @@ public class Main {
             // SignUpManager.singUp();
         } else {
             // Cadastro admin
+            System.out.println("Nenhum usuário! Por favor, cadestre o administrador.");
             SignUpManager.singUp();
         }
     }
