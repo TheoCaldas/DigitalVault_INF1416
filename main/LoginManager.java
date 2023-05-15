@@ -125,6 +125,7 @@ public class LoginManager {
         }
         if (user == null){
             System.err.println("Email não cadastrado!");
+            return false;
         }
 
         if (isUserBlocked(user)){
@@ -273,7 +274,7 @@ public class LoginManager {
         random.setSeed(seed.getBytes());
         random.nextBytes(finalToken);
 
-        int finalInt = ByteBuffer.wrap(finalToken).getInt();
+        int finalInt = Math.abs(ByteBuffer.wrap(finalToken).getInt());
         return String.format("%06d", finalInt);
     }
 }
