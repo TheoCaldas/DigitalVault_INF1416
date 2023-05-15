@@ -14,6 +14,7 @@ public class User {
     public Date blocked;
     public int kid; 
     public int gid;
+    public int nLogins;
 
     public User(ResultSet rs) throws SQLException{
         int uid = rs.getInt("uid");
@@ -23,6 +24,7 @@ public class User {
         String blocked = rs.getString("blocked");
         int kid = rs.getInt("kid");
         int gid = rs.getInt("gid");
+        int nLogins = rs.getInt("nlogins");
 
         this.uid = uid;
         this.email = email;
@@ -31,6 +33,7 @@ public class User {
         this.blocked = stringToDate(blocked);
         this.kid = kid;
         this.gid = gid;
+        this.nLogins = nLogins;
     }
 
     public static String dateToString(Date date){
