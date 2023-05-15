@@ -101,8 +101,8 @@ public class LoginManager {
 
     public boolean firstStep(){
         System.out.print("Email cadastrado: ");
-        // String email = "admin@inf1416.puc-rio.br";
-        String email = scanner.nextLine();
+        String email = "admin@inf1416.puc-rio.br";
+        // String email = scanner.nextLine();
 
         User user = null;
         try {
@@ -145,8 +145,8 @@ public class LoginManager {
     }
 
     protected boolean validatePassword(String userHash){
-        // String[] passwords = {"12341234"};
-        String[] passwords = PasswordManager.passwordInput();
+        String[] passwords = {"12341234"};
+        // String[] passwords = PasswordManager.passwordInput();
 
         for (int i = 0; i < passwords.length; i++) {
             char[] password = passwords[i].toCharArray();

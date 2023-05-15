@@ -1,5 +1,8 @@
 package DigitalVault_INF1416.db;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.*;
+import java.security.spec.InvalidKeySpecException;
 import java.sql.*;
 
 public class DBQueries {
@@ -13,8 +16,8 @@ public class DBQueries {
     public static void main(String[] args) {  
         start();
         try{
-            // selectAll();
-            selectAllUsers();
+            selectAll();
+            // selectAllUsers();
         }catch(SQLException e){
             System.err.println(e.getMessage());
         }
@@ -253,7 +256,7 @@ public class DBQueries {
         return (rowsUpdated > 0);
     }
 
-    public static Certificate getCertificate(int kid) throws SQLException, CertificateException {
+    public static KeyChain getKeyChain(int kid) throws SQLException, CertificateException {
         Connection conn = getCurrentConnection();
 
         String query = "SELECT * FROM chaveiro where kid = ?"; 
@@ -262,13 +265,10 @@ public class DBQueries {
         stmt.setInt(1, kid);
 
         ResultSet rs = stmt.executeQuery();
-
-
         if (isEmptyResult(rs))
             return null;
 
-        Certificate crt = new Certificate(rs);
-        
+        KeyChain crt = new KeyChain(rs);
         return crt;
     }
 }

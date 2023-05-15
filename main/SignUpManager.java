@@ -244,7 +244,7 @@ public class SignUpManager {
 
         //TO DO: Ver qual forma correta de armazenar pk e crt
         String crt = CertificateManager.certificateToString(cert);
-        String pk = privateKey.toString();
+        String pk = getHex(privateKey.getEncoded());
 
         Random rand = new Random();
         int kid = rand.nextInt();
@@ -256,6 +256,15 @@ public class SignUpManager {
 
         DBQueries.insertKeys(kid, crt, pk);
         DBQueries.insertUser(uid, email, hash, token, kid, gid);
+    }
+
+    static public String getHex(byte[] data){
+        StringBuffer buf = new StringBuffer();
+        for(int i = 0; i < data.length; i++) {
+            String hex = Integer.toHexString(0x0100 + (data[i] & 0x00FF)).substring(1);
+            buf.append((hex.length() < 2 ? "0" : "") + hex);
+        }
+        return buf.toString();
     }
 
     private static boolean validateKeys(X509Certificate cert, PrivateKey privateKey) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException{

@@ -9,11 +9,10 @@ import DigitalVault_INF1416.main.LoginManager;
 public class IToken extends LoginManager{
     public static void main(String[] args) {
         IToken itokenApp = new IToken();
-        itokenApp.login();
+        itokenApp.token();
     }
 
-    @Override
-    public void login(){
+    public void token(){
         scanner = new Scanner(System.in);
 
         String[] data = readTempFile();

@@ -4,7 +4,7 @@ import java.security.cert.*;
 import java.sql.SQLException;
 import java.util.Scanner;
 
-import DigitalVault_INF1416.db.Certificate;
+import DigitalVault_INF1416.db.KeyChain;
 import DigitalVault_INF1416.db.DBQueries;
 import DigitalVault_INF1416.db.User;
 
@@ -35,9 +35,9 @@ public class UIManager {
         body1Queries(user);
         System.out.println(" ____________________________________");
         System.out.print("|Caminho da pasta: ");
-        String folderPath = scanner.next();
+        String folderPath = scanner.nextLine();
         System.out.print("|Frase Secreta: ");
-        String secret = scanner.next();
+        String secret = scanner.nextLine();
 
         String[] inputs = {folderPath, secret};
         return inputs;
@@ -51,7 +51,7 @@ public class UIManager {
     }
 
     public static void header(User user) throws CertificateException, SQLException {
-        Certificate usrCrt = DBQueries.getCertificate(user.kid); 
+        KeyChain usrCrt = DBQueries.getKeyChain(user.kid); 
         String crtSubject = usrCrt.crt.getSubjectX500Principal().toString();
         String username = CertificateManager.extractCommonName(crtSubject);
 
