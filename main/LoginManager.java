@@ -22,11 +22,9 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.swing.text.html.HTMLDocument.RunElement;
 
 import org.bouncycastle.crypto.generators.OpenBSDBCrypt;
 // import org.bouncycastle.util.encoders.Base64;
-import org.bouncycastle.jcajce.provider.symmetric.ARC4.Base;
 
 public class LoginManager {
     protected final static long BLOCKED_WAIT = 120000; //blocked waiting time in miliseconds
@@ -39,6 +37,8 @@ public class LoginManager {
 
     private static LoginManager instance = null;
 
+    private final static boolean DEBUG_MODE = true;
+
     protected LoginManager() {}
 
     public static LoginManager getInstance() {
@@ -50,6 +50,12 @@ public class LoginManager {
 
     public User login(){
         scanner = new Scanner(System.in);
+
+        if (DEBUG_MODE){
+            firstStep();
+            return currentUser;
+        }
+
         int error2Count = 0; //count of failed logins on step 2
         int error3Count = 0; //count of failed logins on step 3
         boolean step1Check = false; //has passed on step 1

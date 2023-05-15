@@ -31,6 +31,7 @@ import DigitalVault_INF1416.main.UIManager.UIAction;
 public class VaultManager {
 
     public static Scanner scanner;
+    public static String ADMIN_SECRET = "admin";
     
     public static UIAction listVault(User user) throws SQLException, CertificateException {
         UIManager.vaultFlow(user);
@@ -48,13 +49,14 @@ public class VaultManager {
             return UIAction.BACK_TO_MENU;
         }
 
-        byte[] file = readVault(admin, folderPath, "index");
+        byte[] file = readVault(admin, folderPath, "index", ADMIN_SECRET);
         String indexString = new String(file);
         String[] files = indexString.split("\n");
         if (files == null) return UIAction.BACK_TO_MENU;
 
         while (true){
             int i = 0;
+            //TO DO: Print only if user can acess
             for (String fil: files){ //list
                 System.out.println(i + " - " + fil);
                 i++;
@@ -75,11 +77,8 @@ public class VaultManager {
                 System.out.println("Sem acesso!");
                 continue;
             }
-            byte[] result = readVault(user, folderPath, codeName);
-            // for (byte line: result)
-            //     System.out.println(line);
+            byte[] result = readVault(user, folderPath, codeName, secret);
             try {
-                // writeFile(secretName, result);
                 Files.write(Paths.get(secretName), result);
             } catch (Exception e) {
                 continue;
@@ -87,8 +86,8 @@ public class VaultManager {
         }
     }
 
-    //TO DO: verify secret
-    private static byte[] readVault(User user, String folderPath, String filename) throws SQLException, CertificateException {
+    private static byte[] readVault(User user, String folderPath, String filename, String userSecret) 
+    throws SQLException, CertificateException {
         KeyChain kc = DBQueries.getKeyChain(user.kid);
         if (kc == null){
             return null;
@@ -96,7 +95,8 @@ public class VaultManager {
         
         byte[] file;
         try {
-            file = decryptFile(kc.privateKey, kc.crt, 
+            PrivateKey pk = PrivateKeyManager.getPrivateKey(kc, userSecret);
+            file = decryptFile(pk, kc.crt, 
                 folderPath + "/" + filename + ".enc", 
                 folderPath + "/" + filename + ".env",
                 folderPath + "/" + filename + ".asd");
@@ -142,11 +142,4 @@ public class VaultManager {
 		}
 		return decodedFile;
 	}
-
-    static private void writeFile(String filename, String[] content) throws IOException{
-        FileWriter writer = new FileWriter(filename);
-        for (String line: content)
-            writer.write(line + "\n");
-        writer.close();
-    }
 }

@@ -135,8 +135,10 @@ public class SignUpManager {
 
         //acessar chave privada
         PrivateKey privateKey;
+        String encryptedPK;
         try{
-            privateKey = getPrivateKey(user.privateKeyPath, user.secret);
+            privateKey = PrivateKeyManager.getPrivateKey(user.privateKeyPath, user.secret);
+            encryptedPK = PrivateKeyManager.getEncryptedPK(user.privateKeyPath);
         } catch (Exception e) {
             System.err.println(e.getMessage());
             System.err.println("Caminho para chave privada inválido OU frase secreta errada!");
@@ -165,20 +167,11 @@ public class SignUpManager {
             System.err.println(e.getMessage());
             System.err.println("Falha ao gerar token!");
             return false;
-        } 
-
-        // //escrever arquivo token
-        // try {
-        //     writeToken(email, hash, token);
-        // } catch (Exception e) {
-        //     System.err.println(e.getMessage());
-        //     System.err.println("Falha ao escrever token.txt");
-        //     return false;
-        // }
+        }
 
         //salvar tudo no BD
         try {
-            saveData(email, hash, privateKey, token, user.group, cert);
+            saveData(email, hash, encryptedPK, token, user.group, cert);
         } catch (Exception er) {
             System.err.println(er.getMessage());
             System.err.println("Falha ao a BD");
@@ -202,53 +195,11 @@ public class SignUpManager {
         return (hasValidSize && hasOnlyDigits && hasNoEqualDigitsInSequence);       
     }
 
-    private static PrivateKey getPrivateKey(String path, String secret) throws 
-    IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
-     IllegalBlockSizeException, BadPaddingException, InvalidKeySpecException {
-
-        Security.addProvider(new BouncyCastleProvider());
-    
-        //read encrypted private key in path
-        FileInputStream fis = new FileInputStream(path);
-        byte[] encryptedKeyBytes = new byte[fis.available()];
-        fis.read(encryptedKeyBytes);
-        fis.close();
-
-        //generate secretKey with PRNG and secret string
-        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-        random.setSeed(secret.getBytes());
-        KeyGenerator keyGenerator = KeyGenerator.getInstance("DES");
-        keyGenerator.init(56, random);
-		SecretKey secretKey = keyGenerator.generateKey();
-
-        //decrypt private key with secretKey
-        Cipher cipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
-        cipher.init(Cipher.DECRYPT_MODE, secretKey);
-        byte[] decryptedKeyBytes = cipher.doFinal(encryptedKeyBytes);
-
-        //remove headers
-        String encodedPK = new String(decryptedKeyBytes);
-        encodedPK = encodedPK.replace("-----BEGIN PRIVATE KEY-----", "");
-        encodedPK = encodedPK.replace("-----END PRIVATE KEY-----", "");
-        encodedPK = encodedPK.replace("\n", "");
-
-        //decode base64
-        byte[] decodedPK = Base64.getDecoder().decode(encodedPK);
-
-        //use key spec and key factory to get final private key
-        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decodedPK);
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        PrivateKey privateKey = keyFactory.generatePrivate(keySpec);
-
-        return privateKey;
-    }
-
-    private static void saveData(String email, String hash, PrivateKey privateKey, String token, 
+    private static void saveData(String email, String hash, String encryptedPK, String token, 
     TempUser.Group group, X509Certificate cert) throws SQLException, CertificateEncodingException{
 
-        //TO DO: Ver qual forma correta de armazenar pk e crt
         String crt = CertificateManager.certificateToString(cert);
-        String pk = getHex(privateKey.getEncoded());
+        String pk = encryptedPK;
 
         Random rand = new Random();
         int kid = rand.nextInt();

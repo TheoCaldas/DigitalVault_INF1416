@@ -3,13 +3,8 @@
  * Matheus Kulick - 1911090
  */
 package DigitalVault_INF1416.db;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.*;
-import java.security.spec.InvalidKeySpecException;
 import java.sql.*;
-
-import javax.naming.spi.DirStateFactory.Result;
 
 public class DBQueries {
     private static final String dbName = "cofredigital.db";

@@ -22,7 +22,7 @@ import DigitalVault_INF1416.main.CertificateManager;
 public class KeyChain {
     public int kid;
     public X509Certificate crt;
-    public PrivateKey privateKey;
+    public String privateKey;
 
     public KeyChain(ResultSet rs) throws SQLException, CertificateException {
         int kid = rs.getInt("kid");
@@ -31,28 +31,28 @@ public class KeyChain {
 
         this.kid = kid;
         this.crt = CertificateManager.stringToCertificate(crt);
-        this.privateKey = recoverPK(privateKey);
+        this.privateKey = privateKey;//recoverPK(privateKey);
     }
 
-    private PrivateKey recoverPK(String pk){
-        try {
-            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(hexStringToByteArray(pk));
-            KeyFactory kf = KeyFactory.getInstance("RSA");
-            PrivateKey privKey = kf.generatePrivate(keySpec);
-            return privKey;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-    public static byte[] hexStringToByteArray(String hexString) {
-        int len = hexString.length();
-        byte[] byteArray = new byte[len / 2];
-        for (int i = 0; i < len; i += 2) {
-            byteArray[i / 2] = (byte) ((Character.digit(hexString.charAt(i), 16) << 4)
-                    + Character.digit(hexString.charAt(i+1), 16));
-        }
-        return byteArray;
-    }
+    // private PrivateKey recoverPK(String pk){
+    //     try {
+    //         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(hexStringToByteArray(pk));
+    //         KeyFactory kf = KeyFactory.getInstance("RSA");
+    //         PrivateKey privKey = kf.generatePrivate(keySpec);
+    //         return privKey;
+    //     } catch (Exception e) {
+    //         return null;
+    //     }
+    // }
+    // public static byte[] hexStringToByteArray(String hexString) {
+    //     int len = hexString.length();
+    //     byte[] byteArray = new byte[len / 2];
+    //     for (int i = 0; i < len; i += 2) {
+    //         byteArray[i / 2] = (byte) ((Character.digit(hexString.charAt(i), 16) << 4)
+    //                 + Character.digit(hexString.charAt(i+1), 16));
+    //     }
+    //     return byteArray;
+    // }
 }
 
 
