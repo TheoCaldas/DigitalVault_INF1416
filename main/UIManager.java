@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.Scanner;
 
 import DigitalVault_INF1416.db.KeyChain;
+import DigitalVault_INF1416.db.LogManager;
 import DigitalVault_INF1416.db.DBQueries;
 import DigitalVault_INF1416.db.User;
 
@@ -23,7 +24,7 @@ public class UIManager {
     public static UIAction UserFlow1(User user) throws CertificateException, SQLException {
         header(user);
         body1Access(user);
-        UIAction action = body2User();
+        UIAction action = body2User(user);
         return action;
     }
 
@@ -112,7 +113,8 @@ public class UIManager {
         return UIAction.INVALID_INPUT;
     }
 
-    public static UIAction body2SignOut() {
+    public static UIAction body2SignOut(User user) {
+        LogManager.addRegister(8001, user.email, null);
         System.out.println(" ____________________________________");
         System.out.println("|Saída do Sistema:");
         System.out.println("|Mensagem de Saída.");
@@ -125,10 +127,13 @@ public class UIManager {
         String input = scanner.next();
         switch (input) {
             case "1":
+                LogManager.addRegister(8002, user.email, null);
                 return UIAction.SIGNOUT_CONFIRM;
             case "2":
+                LogManager.addRegister(8003, user.email, null);
                 return UIAction.STOP_PROGRAM;
             case "3":
+                LogManager.addRegister(8004, user.email, null);
                 return UIAction.BACK_TO_MENU;
         }
         return UIAction.INVALID_INPUT;

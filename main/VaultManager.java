@@ -113,7 +113,10 @@ public class VaultManager {
                 folderPath + "/" + filename + ".env",
                 folderPath + "/" + filename + ".asd");
 
-            if (file == null) return null;
+            if (file == null) {
+                LogManager.addRegister(6007, user.email, null);
+                return null;
+            };
             return file;
         } catch (Exception e) {
             System.out.println("Impossível acessar pasta");
