@@ -30,6 +30,7 @@ public class DBQueries {
                 createDB();
                 insertGroup(ADMIN_GID, "admin");
                 insertGroup(USER_GID, "user");
+                insertAllMessages();
             }
             catch (SQLException e){
                 System.err.println(e.getMessage()); 
@@ -80,6 +81,24 @@ public class DBQueries {
                 + " FOREIGN KEY (gid) REFERENCES grupo(gid)\n"
                 + ");";  
         DBManager.createNewTable(conn, dbName, sql);
+
+        //mensagens
+        sql = "CREATE TABLE IF NOT EXISTS mensagem (\n"  
+                + " mid integer PRIMARY KEY,\n"  
+                + " description text\n"  
+                + ");";  
+        DBManager.createNewTable(conn, dbName, sql);
+
+        //registro
+        sql = "CREATE TABLE IF NOT EXISTS registro (\n"  
+                + " rid integer PRIMARY KEY,\n"  
+                + " date text\n"  
+                + " uid integer\n"  
+                + " mid integer\n"
+                + " FOREIGN KEY (uid) REFERENCES usuario(uid),\n" 
+                + " FOREIGN KEY (mid) REFERENCES mensagem(mid),\n" 
+                + ");";  
+        DBManager.createNewTable(conn, dbName, sql);
     }
 
     public static void insertKeys(int kid, String crt, String privatekey) throws SQLException{
@@ -98,6 +117,36 @@ public class DBQueries {
         PreparedStatement pstmt = conn.prepareStatement(sql);  
         pstmt.setInt(1, gid);  
         pstmt.setString(2, groupname);  
+        pstmt.executeUpdate();  
+    }
+
+    public static void insertMessage(int mid, String description) throws SQLException{
+        String sql = "INSERT INTO mensagem(mid, description) VALUES(?,?)";  
+        Connection conn = getCurrentConnection(); 
+        PreparedStatement pstmt = conn.prepareStatement(sql);  
+        pstmt.setInt(1, mid);  
+        pstmt.setString(2, description);  
+        pstmt.executeUpdate();  
+    }
+
+    public static void insertRegister(int rid, String date, int uid, int mid) throws SQLException{
+        String sql = "INSERT INTO registro(rid, date, uid, mid) VALUES(?,?,?,?)";  
+        Connection conn = getCurrentConnection(); 
+        PreparedStatement pstmt = conn.prepareStatement(sql);  
+        pstmt.setInt(1, rid);  
+        pstmt.setString(2, date);
+        pstmt.setInt(3, uid);
+        pstmt.setInt(4, mid);
+        pstmt.executeUpdate();  
+    }
+
+    public static void insertRegister(int rid, String date, int mid) throws SQLException{
+        String sql = "INSERT INTO registro(rid, date, mid) VALUES(?,?,?)";  
+        Connection conn = getCurrentConnection(); 
+        PreparedStatement pstmt = conn.prepareStatement(sql);  
+        pstmt.setInt(1, rid);  
+        pstmt.setString(2, date);
+        pstmt.setInt(3, mid);
         pstmt.executeUpdate();  
     }
     
@@ -285,5 +334,65 @@ public class DBQueries {
             return null;
             
         return new User(rs);
+    }
+
+    private static void insertAllMessages() throws SQLException{
+        insertMessage(1001, "Sistema iniciado.");
+        insertMessage(1002, "Sistema encerrado.");
+        insertMessage(1003, "Sessão iniciada para <login_name>.");
+        insertMessage(1004, "Sessão encerrada para <login_name>.");
+        insertMessage(2001, "Autenticação etapa 1 iniciada.");
+        insertMessage(2002, "Autenticação etapa 1 encerrada.");
+        insertMessage(2003, "Login name <login_name> identificado com acesso liberado.");
+        insertMessage(2004, "Login name <login_name> identificado com acesso bloqueado.");
+        insertMessage(2005, "Login name <login_name> não identificado.");
+        insertMessage(3001, "Autenticação etapa 2 iniciada para <login_name>.");
+        insertMessage(3002, "Autenticação etapa 2 encerrada para <login_name>.");
+        insertMessage(3003, "Senha pessoal verificada positivamente para <login_name>.");
+        insertMessage(3004, "Primeiro erro da senha pessoal contabilizado para <login_name>.");
+        insertMessage(3005, "Segundo erro da senha pessoal contabilizado para <login_name>.");
+        insertMessage(3006, "Terceiro erro da senha pessoal contabilizado para <login_name>.");
+        insertMessage(3007, "Acesso do usuário <login_name> bloqueado pela autenticação etapa 2.");
+        insertMessage(4001, "Autenticação etapa 3 iniciada para <login_name>.");
+        insertMessage(4002, "Autenticação etapa 3 encerrada para <login_name>.");
+        insertMessage(4003, "Token verificado positivamente para <login_name>.");
+        insertMessage(4004, "Primeiro erro de token contabilizado para <login_name>.");
+        insertMessage(4005, "Segundo erro de token contabilizado para <login_name>.");
+        insertMessage(4006, "Terceiro erro de token contabilizado para <login_name>.");
+        insertMessage(4007, "Acesso do usuário <login_name> bloqueado pela autenticação etapa 3.");
+        insertMessage(5001, "Tela principal apresentada para <login_name>.");
+        insertMessage(5002, "Opção 1 do menu principal selecionada por <login_name>.");
+        insertMessage(5003, "Opção 2 do menu principal selecionada por <login_name>.");
+        insertMessage(5004, "Opção 3 do menu principal selecionada por <login_name>.");
+        insertMessage(6001, "Tela de cadastro apresentada para <login_name>.");
+        insertMessage(6002, "Botão cadastrar pressionado por <login_name>.");
+        insertMessage(6003, "Senha pessoal inválida fornecida por <login_name>.");
+        insertMessage(6004, "Caminho do certificado digital inválido fornecido por <login_name>.");
+        insertMessage(6005, "Chave privada verificada negativamente para <login_name> (caminho inválido).");
+        insertMessage(6006, "Chave privada verificada negativamente para <login_name> (frase secreta inválida).");
+        insertMessage(6007, "Chave privada verificada negativamente para <login_name> (assinatura digital inválida).");
+        insertMessage(6008, "Confirmação de dados aceita por <login_name>.");
+        insertMessage(6009, "Confirmação de dados rejeitada por <login_name>.");
+        insertMessage(6010, "Botão voltar de cadastro para o menu principal pressionado por <login_name>.");
+        insertMessage(7001, "Tela de consulta de arquivos secretos apresentada para <login_name>.");
+        insertMessage(7002, "Botão voltar de consulta para o menu principal pressionado por <login_name>.");
+        insertMessage(7003, "Botão Listar de consulta pressionado por <login_name>.");
+        insertMessage(7004, "Caminho de pasta inválido fornecido por <login_name>.");
+        insertMessage(7005, "Arquivo de índice decriptado com sucesso para <login_name>.");
+        insertMessage(7006, "Arquivo de índice verificado (integridade e autenticidade) com sucesso para <login_name>.");
+        insertMessage(7007, "Falha na decriptação do arquivo de índice para <login_name>.");
+        insertMessage(7008, "Falha na verificação (integridade e autenticidade) do arquivo de índice para <login_name>.");
+        insertMessage(7009, "Lista de arquivos presentes no índice apresentada para <login_name>.");
+        insertMessage(7010, "Arquivo <arq_name> selecionado por <login_name> para decriptação.");
+        insertMessage(7011, "Acesso permitido ao arquivo <arq_name> para <login_name>.");
+        insertMessage(7012, "Acesso negado ao arquivo <arq_name> para <login_name>.");
+        insertMessage(7013, "Arquivo <arq_name> decriptado com sucesso para <login_name>.");
+        insertMessage(7014, "Arquivo <arq_name> verificado (integridade e autenticidade) com sucesso para <login_name>.");
+        insertMessage(7015, "Falha na decriptação do arquivo <arq_name> para <login_name>.");
+        insertMessage(7016, "Falha na verificação (integridade e autenticidade) do arquivo <arq_name> para <login_name>.");
+        insertMessage(8001, "Tela de saída apresentada para <login_name>.");
+        insertMessage(8002, "Botão encerrar sessão pressionado por <login_name>.");
+        insertMessage(8003, "Botão encerrar sistema pressionado por <login_name>.");
+        insertMessage(8004, "Botão voltar de sair para o menu principal pressionado por <login_name>.");        
     }
 }
