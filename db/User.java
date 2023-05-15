@@ -33,13 +33,13 @@ public class User {
         this.gid = gid;
     }
 
-    public String dateToString(Date date){
+    public static String dateToString(Date date){
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         String strDate = formatter.format(date);
         return strDate;
     }
 
-    public Date stringToDate(String string){
+    public static Date stringToDate(String string){
         if (string.equals(DBQueries.NOT_BLOCKED))
             return null;
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
