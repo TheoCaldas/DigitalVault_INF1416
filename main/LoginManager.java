@@ -119,6 +119,7 @@ public class LoginManager {
         }
         if (user == null){
             System.err.println("Email não cadastrado!");
+            return false;
         }
 
         if (isUserBlocked(user)){
