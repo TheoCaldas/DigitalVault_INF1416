@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-// import java.util.Base64;
+import java.util.Base64;
 import java.util.Date;
 import java.util.Scanner;
 
@@ -20,7 +20,8 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
 import org.bouncycastle.crypto.generators.OpenBSDBCrypt;
-import org.bouncycastle.util.encoders.Base64;
+// import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.jcajce.provider.symmetric.ARC4.Base;
 
 public class LoginManager {
     protected final static long BLOCKED_WAIT = 120000; //blocked waiting time in miliseconds
@@ -161,7 +162,7 @@ public class LoginManager {
 
     public boolean thirdStep(){
         System.out.print("Entre com o token gerado pelo aplicativo iToken: ");
-        String token = scanner.nextLine();
+        String token = scanner.next();
 
         String decryptedUserToken;
         try {
@@ -184,14 +185,12 @@ public class LoginManager {
         }
 
         for (String string : possibleTokens) {
-            // System.out.println("Possible: " + string + " - Real: " + token);
             if (string.equals(token))
                 return true;
         }
 
         System.out.println("Token inválido!");
-        // return false;
-        return true;
+        return false;
     }
 
     private boolean isUserBlocked(User user){
@@ -225,13 +224,10 @@ public class LoginManager {
     protected String decryptToken(String token, String password) 
     throws NoSuchAlgorithmException, NoSuchPaddingException, 
     InvalidKeyException, IllegalBlockSizeException, BadPaddingException{
-        // System.out.println(token + "\n" + password);
-        //Decode token
-        byte[] decodedToken = Base64.decode(token.getBytes());
-        // System.out.println(decodedToken.toString());
+        byte[] decodedToken = Base64.getDecoder().decode(token);
 
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-        random.setSeed(password.trim().getBytes());
+        random.setSeed(password.getBytes());
         KeyGenerator keyGenerator = KeyGenerator.getInstance("DES");
         keyGenerator.init(56, random);
 		SecretKey secretKey = keyGenerator.generateKey();
@@ -241,7 +237,16 @@ public class LoginManager {
         cipher.init(Cipher.DECRYPT_MODE, secretKey);
         byte[] decryptedToken = cipher.doFinal(decodedToken);
 
-        return decryptedToken.toString();
+        return getHex(decryptedToken);
+    }
+
+    static public String getHex(byte[] data){
+        StringBuffer buf = new StringBuffer();
+        for(int i = 0; i < data.length; i++) {
+            String hex = Integer.toHexString(0x0100 + (data[i] & 0x00FF)).substring(1);
+            buf.append((hex.length() < 2 ? "0" : "") + hex);
+        }
+        return buf.toString();
     }
 
     protected String generateFinalToken(String token, int deltaMinutes) throws NoSuchAlgorithmException{
@@ -250,10 +255,6 @@ public class LoginManager {
         long currentTimeMinutes = (System.currentTimeMillis() / miliToMinutes) * miliToMinutes;
         long time = currentTimeMinutes + delay;
         String seed = token + time;
-
-        // System.out.println("\nToken Decrypted: " + token);
-        // System.out.println("Time: " + time);
-        // System.out.println("(seed): Token Decrypted + Time: " + seed);
 
         byte[] finalToken = new byte[4];
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
