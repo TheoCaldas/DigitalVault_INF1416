@@ -4,6 +4,7 @@
  */
 package DigitalVault_INF1416.main;
 
+import java.io.Console;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,16 +32,17 @@ import DigitalVault_INF1416.main.UIManager.UIAction;
 public class VaultManager {
 
     public static Scanner scanner;
-    public static String ADMIN_SECRET = "admin";
+    public static String ADMIN_SECRET;
     
     public static UIAction listVault(User user) throws SQLException, CertificateException {
         UIManager.vaultFlow(user);
         scanner = new Scanner(System.in);
+        Console console = System.console();
         System.out.println(" ____________________________________");
         System.out.print("|Caminho da pasta: ");
         String folderPath = scanner.nextLine();
-        System.out.print("|Frase Secreta: ");
-        String secret = scanner.nextLine();
+        char[] secretChar = console.readPassword("Frase Secreta: ");
+        String secret = new String(secretChar);
 
         User admin;
         try {
@@ -78,6 +80,7 @@ public class VaultManager {
                 continue;
             }
             byte[] result = readVault(user, folderPath, codeName, secret);
+            System.out.println("Arquivo secreto lido!");
             try {
                 Files.write(Paths.get(secretName), result);
             } catch (Exception e) {
@@ -104,7 +107,6 @@ public class VaultManager {
             if (file == null) return null;
             return file;
         } catch (Exception e) {
-            System.err.println(e.getMessage());
             System.out.println("Impossível acessar pasta");
             return null;
         }
