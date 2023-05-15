@@ -46,6 +46,9 @@ public class VaultManager {
         char[] secretChar = console.readPassword("Frase Secreta: ");
         String secret = new String(secretChar);
 
+        LogManager.addRegister(7001, user.email, null);
+        LogManager.addRegister(7003, user.email, null);
+
         User admin;
         try {
             admin = DBQueries.selectAdmin();
@@ -55,9 +58,13 @@ public class VaultManager {
 
         byte[] file = readVault(admin, folderPath, "index", ADMIN_SECRET);
         if (file == null){
+            LogManager.addRegister(7007, user.email, null);
+            LogManager.addRegister(7008, user.email, null);
             System.out.println("Falha ao acessar indice!");
             return UIAction.BACK_TO_MENU;
         }
+        LogManager.addRegister(7005, user.email, null);
+        LogManager.addRegister(7006, user.email, null);
         String indexString = new String(file);
         String[] files = indexString.split("\n");
         if (files == null) return UIAction.BACK_TO_MENU;
@@ -72,10 +79,13 @@ public class VaultManager {
                     i++;
                 }
             }
-
+            LogManager.addRegister(7009, user.email, null);
             System.out.println("Digite o numero do item desejado ou q para voltar: ");
             String input = scanner.nextLine();
-            if (input.equals("q")) return UIAction.BACK_TO_MENU;
+            if (input.equals("q")) {
+                LogManager.addRegister(7002, user.email, null);
+                return UIAction.BACK_TO_MENU;
+            }
             int index = Integer.parseInt(input);
         
             String[] info = files[index].split(" ");
@@ -120,6 +130,7 @@ public class VaultManager {
             return file;
         } catch (Exception e) {
             System.out.println("Impossível acessar pasta");
+            LogManager.addRegister(7004, user.email, null);
             return null;
         }
     }
