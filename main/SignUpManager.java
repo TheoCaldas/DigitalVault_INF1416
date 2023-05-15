@@ -1,6 +1,7 @@
 package DigitalVault_INF1416.main;
 
 import DigitalVault_INF1416.db.*;
+import DigitalVault_INF1416.main.UIManager.UIAction;
 
 import java.security.*;
 import java.security.cert.*;
@@ -19,7 +20,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 public class SignUpManager {
     private static Scanner scanner;
 
-    public static void singUp(){
+    public static UIAction signUp(){
         scanner = new Scanner(System.in);
         while (true){
             System.out.println("======TELA DE CADASTRO======");
@@ -27,14 +28,16 @@ public class SignUpManager {
             System.out.print("Digite 1 para iniciar cadastro - Digite 2 para voltar: ");
             String option = scanner.nextLine();
 
-            if (option.equals("2")) break;
+            if (option.equals("2")) return UIAction.BACK_TO_MENU;
 
             TempUser user = createRawUser();
             if (saveUser(user)){
                 System.out.println("\n\nCadastro realizado!\n");
-                break;
-            }else
+            } else {
                 System.out.println("\n\nCadastro não realizado. Tente novamente.\n");
+            }
+
+            return UIAction.BACK_TO_MENU;
         }
     }
 
@@ -228,10 +231,10 @@ public class SignUpManager {
     }
 
     private static void saveData(String email, String hash, PrivateKey privateKey, String token, 
-    TempUser.Group group, X509Certificate cert) throws SQLException{
+    TempUser.Group group, X509Certificate cert) throws SQLException, CertificateEncodingException{
 
         //TO DO: Ver qual forma correta de armazenar pk e crt
-        String crt = cert.toString();
+        String crt = CertificateManager.certificateToString(cert);
         String pk = privateKey.toString();
 
         Random rand = new Random();

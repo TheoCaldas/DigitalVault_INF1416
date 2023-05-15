@@ -15,7 +15,7 @@ public class LoginManager {
     private static User currentUser;
     
 
-    public static void login(){
+    public static User login() {
         scanner = new Scanner(System.in);
         int error2Count = 0; //count of failed logins on step 2
         int error3Count = 0; //count of failed logins on step 3
@@ -25,10 +25,10 @@ public class LoginManager {
         while (true){
             System.out.println("======TELA DE LOGIN======");
             
-            System.out.print("Digite 1 para iniciar login - Digite 2 para voltar: ");
+            System.out.print("Digite 1 para iniciar login - Digite 2 para sair: ");
             String option = scanner.nextLine();
 
-            if (option.equals("2")) break;
+            if (option.equals("2")) return null;
 
             if (step1Check || (step1Check = firstStep())){
                 if (step2Check || (step2Check = secondStep())){
@@ -53,6 +53,9 @@ public class LoginManager {
 
             System.out.println("\n\nLogin não realizado. Tente novamente.\n");
         }
+        User loggedUser = currentUser;
+        currentUser = null;
+        return loggedUser;
     }
 
     public static boolean firstStep(){

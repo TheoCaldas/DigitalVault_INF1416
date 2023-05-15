@@ -1,5 +1,6 @@
 package DigitalVault_INF1416.db;
-import java.sql.*; 
+import java.security.cert.*;
+import java.sql.*;
 
 public class DBQueries {
     private static final String dbName = "cofredigital.db";
@@ -67,10 +68,12 @@ public class DBQueries {
                 + " hash text,\n"  
                 + " token text,\n" 
                 + " blocked text,\n"
+                + " nlogins integer,\n" 
+                + " nqueries integer,\n" 
                 + " kid integer,\n"  
                 + " gid integer,\n"  
                 + " FOREIGN KEY (kid) REFERENCES chaveiro(kid),\n" 
-                + " FOREIGN KEY (gid) REFERENCES grupo(gid)\n" 
+                + " FOREIGN KEY (gid) REFERENCES grupo(gid)\n"
                 + ");";  
         DBManager.createNewTable(conn, dbName, sql);
     }
@@ -95,7 +98,7 @@ public class DBQueries {
     }
     
     public static void insertUser(int uid, String email, String hash, String token, int kid, int gid) throws SQLException{
-        String sql = "INSERT INTO usuario(uid, email, hash, token, blocked, kid, gid) VALUES(?,?,?,?,?,?,?)";  
+        String sql = "INSERT INTO usuario(uid, email, hash, token, blocked, nlogins, nqueries, kid, gid) VALUES(?,?,?,?,?,0,0,?,?)";  
         Connection conn = getCurrentConnection();
         PreparedStatement pstmt = conn.prepareStatement(sql);  
         pstmt.setInt(1, uid);  
@@ -165,6 +168,19 @@ public class DBQueries {
         }  
     }
 
+    public static int getUsersCount() throws SQLException {
+        Connection conn = getCurrentConnection();
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM usuario");
+
+        int count = 0;
+        if (rs.next()) {
+            count = rs.getInt(1);
+        }
+
+        return count;
+    }
+
     public static boolean hasUsers() throws SQLException{
         Connection conn = getCurrentConnection();
         Statement stmt = conn.createStatement();
@@ -204,6 +220,26 @@ public class DBQueries {
         return new User(rs);
     }
 
+    public static void updateUserLoginCount(User user) throws SQLException {
+        Connection conn = getCurrentConnection();
+        String sql = "UPDATE usuario SET nlogins = nlogins + 1 WHERE uid = ?";
+
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setInt(1, user.uid);
+
+        pstmt.executeUpdate();
+    }
+
+    public static void updateUserQueriesCount(User user) throws SQLException {
+        Connection conn = getCurrentConnection();
+        String sql = "UPDATE usuario SET nqueries = nqueries + 1 WHERE uid = ?";
+
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setInt(1, user.uid);
+
+        pstmt.executeUpdate();
+    }
+
     //return if user was blocked
     public static boolean blockUser(User user, java.util.Date nowDate) throws SQLException{
         Connection conn = getCurrentConnection();
@@ -215,5 +251,24 @@ public class DBQueries {
 
         int rowsUpdated = pstmt.executeUpdate();
         return (rowsUpdated > 0);
+    }
+
+    public static Certificate getCertificate(int kid) throws SQLException, CertificateException {
+        Connection conn = getCurrentConnection();
+
+        String query = "SELECT * FROM chaveiro where kid = ?"; 
+
+        PreparedStatement stmt = conn.prepareStatement(query);
+        stmt.setInt(1, kid);
+
+        ResultSet rs = stmt.executeQuery();
+
+
+        if (isEmptyResult(rs))
+            return null;
+
+        Certificate crt = new Certificate(rs);
+        
+        return crt;
     }
 }

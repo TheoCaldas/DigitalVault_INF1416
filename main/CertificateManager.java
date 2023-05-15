@@ -2,6 +2,7 @@ package DigitalVault_INF1416.main;
 
 import java.security.cert.*;
 import java.io.*;
+import java.util.Base64;
 import java.util.regex.*;
 
 public class CertificateManager {
@@ -45,5 +46,18 @@ public class CertificateManager {
         if (matcher.find())
             return matcher.group(1);
         return INVALID_CN;
+    }
+
+    public static String certificateToString(X509Certificate cert) throws CertificateEncodingException {
+        byte[] certBytes = cert.getEncoded();
+        String certString = Base64.getEncoder().encodeToString(certBytes);
+        return certString;
+    }
+
+    public static X509Certificate stringToCertificate(String certString) throws CertificateException {
+        byte[] certBytes = Base64.getDecoder().decode(certString);
+        CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+        X509Certificate cert = (X509Certificate) certificateFactory.generateCertificate(new ByteArrayInputStream(certBytes));
+        return cert;
     }
 }
