@@ -71,7 +71,7 @@ public class LoginManager {
                 LogManager.addRegister(2002, null, null);
                 if (step2Check || (step2Check = secondStep())){
                     if (thirdStep()){
-                        LogManager.addRegister(4002, currentUser.email, null)
+                        LogManager.addRegister(4002, currentUser.email, null);
                         System.out.println("Login realizado!");
                         break;
                     }

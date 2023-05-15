@@ -24,7 +24,7 @@ public class LogManager {
         }
     }
 
-    public void addRegister(int mid, String email, String filename){
+    public static void addRegister(int mid, String email, String filename){
         try {
             Date now = new Date();
             String nowString = Register.dateToString(now);
