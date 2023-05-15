@@ -9,7 +9,6 @@ import DigitalVault_INF1416.main.UIManager.UIAction;
 
 import java.security.*;
 import java.security.cert.*;
-import java.security.spec.*;
 import javax.crypto.*;
 
 import java.sql.SQLException;
@@ -19,7 +18,6 @@ import java.util.Random;
 import java.util.Scanner;
 
 import org.bouncycastle.crypto.generators.OpenBSDBCrypt;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class SignUpManager {
     private static Scanner scanner;

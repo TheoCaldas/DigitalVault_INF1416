@@ -5,6 +5,7 @@
 package DigitalVault_INF1416.db;
 import java.security.cert.*;
 import java.sql.*;
+import java.util.ArrayList;
 
 public class DBQueries {
     private static final String dbName = "cofredigital.db";
@@ -93,7 +94,8 @@ public class DBQueries {
         sql = "CREATE TABLE IF NOT EXISTS registro (\n"  
                 + " rid integer PRIMARY KEY,\n"  
                 + " date text\n"  
-                + " uid integer\n"  
+                + " email text\n"  
+                + " filename text\n" 
                 + " mid integer\n"
                 + " FOREIGN KEY (uid) REFERENCES usuario(uid),\n" 
                 + " FOREIGN KEY (mid) REFERENCES mensagem(mid),\n" 
@@ -129,24 +131,15 @@ public class DBQueries {
         pstmt.executeUpdate();  
     }
 
-    public static void insertRegister(int rid, String date, int uid, int mid) throws SQLException{
-        String sql = "INSERT INTO registro(rid, date, uid, mid) VALUES(?,?,?,?)";  
-        Connection conn = getCurrentConnection(); 
-        PreparedStatement pstmt = conn.prepareStatement(sql);  
-        pstmt.setInt(1, rid);  
-        pstmt.setString(2, date);
-        pstmt.setInt(3, uid);
-        pstmt.setInt(4, mid);
-        pstmt.executeUpdate();  
-    }
-
-    public static void insertRegister(int rid, String date, int mid) throws SQLException{
-        String sql = "INSERT INTO registro(rid, date, mid) VALUES(?,?,?)";  
+    public static void insertRegister(int rid, String date, int mid, String email, String filname) throws SQLException{
+        String sql = "INSERT INTO registro(rid, date, mid, email, filename) VALUES(?,?,?,?,?)";  
         Connection conn = getCurrentConnection(); 
         PreparedStatement pstmt = conn.prepareStatement(sql);  
         pstmt.setInt(1, rid);  
         pstmt.setString(2, date);
         pstmt.setInt(3, mid);
+        pstmt.setString(4, (email == null) ? "" : email);
+        pstmt.setString(5, (filname == null) ? "" : filname);
         pstmt.executeUpdate();  
     }
     
@@ -334,6 +327,33 @@ public class DBQueries {
             return null;
             
         return new User(rs);
+    }
+
+    public static String selectDescription(int mid) throws SQLException{
+        Connection conn = getCurrentConnection();
+
+        String query = "SELECT * FROM mensagem WHERE mid = ?";
+        PreparedStatement stmt = conn.prepareStatement(query);
+        stmt.setInt(1, mid);
+        
+        ResultSet rs = stmt.executeQuery();
+        if (isEmptyResult(rs))
+            return null;
+
+        return rs.getString("description");
+    }
+
+    public static ArrayList<Register> selectAllRegisters() throws SQLException{
+        String sql = "SELECT * FROM registro"; 
+        Connection conn = getCurrentConnection();
+        Statement stmt = conn.createStatement();  
+        ResultSet rs = stmt.executeQuery(sql);
+        ArrayList<Register> registers = new ArrayList<Register>();
+        while (rs.next()) {  
+            Register reg = new Register(rs);
+            registers.add(reg);
+        }  
+        return registers;
     }
 
     private static void insertAllMessages() throws SQLException{
