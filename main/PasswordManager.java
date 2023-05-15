@@ -1,4 +1,4 @@
-// package DigitalVault_INF1416.main;
+package DigitalVault_INF1416.main;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,7 +56,7 @@ public class PasswordManager {
         }
     }
 
-    public static void passwordInput() {
+    public static String[] passwordInput() {
         System.out.println("Insira sua senha: ( 'a', 'b', 'c', 'd', 'e' para escolher o campo e 'q' para submeter");
         Character[] possibleInputs = {'a', 'b', 'c', 'd', 'e', 'q'};
         Scanner scanner = new Scanner(System.in);
@@ -91,8 +91,9 @@ public class PasswordManager {
         };
     
         String[] passwords = PasswordManager.createAllPasswordsCombinations(userPassword);
-        System.out.println(Arrays.toString(passwords));
+        // System.out.println(Arrays.toString(passwords));
         // System.out.println(passwords.length);
+        return passwords;
     }
 
     public static Map<Character, PasswordCombination> createPasswordKeyboard() {

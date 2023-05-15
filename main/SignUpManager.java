@@ -265,13 +265,12 @@ public class SignUpManager {
         return signature.verify(signedBytes);
     }
 
-    private static String hashPassword(String password){
+    public static String hashPassword(String password){
         final byte[] salt = new byte[16];
         new SecureRandom().nextBytes(salt);
-        String hash = OpenBSDBCrypt.generate(password.getBytes(), salt, 12);
-        String encodedSalt = Base64.getEncoder().encodeToString(salt);
-        String encodedHash = Base64.getEncoder().encodeToString(hash.getBytes());
-        return "$2y$12$" + encodedSalt + encodedHash;
+        String hash = OpenBSDBCrypt.generate(password.getBytes(), salt, 8);
+        // TODO: - Encode salt and hash
+        return hash;
     }
 
     private static String generateToken(String password) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException{
