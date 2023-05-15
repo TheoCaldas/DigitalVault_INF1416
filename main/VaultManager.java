@@ -19,6 +19,8 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.sql.SQLException;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -52,16 +54,23 @@ public class VaultManager {
         }
 
         byte[] file = readVault(admin, folderPath, "index", ADMIN_SECRET);
+        if (file == null){
+            System.out.println("Falha ao acessar indice!");
+            return UIAction.BACK_TO_MENU;
+        }
         String indexString = new String(file);
         String[] files = indexString.split("\n");
         if (files == null) return UIAction.BACK_TO_MENU;
 
         while (true){
             int i = 0;
-            //TO DO: Print only if user can acess
             for (String fil: files){ //list
-                System.out.println(i + " - " + fil);
-                i++;
+                Pattern pattern = Pattern.compile(user.email.replace(".", "\\."));
+                Matcher matcher = pattern.matcher(fil);
+                if (matcher.find()){
+                    System.out.println(i + " - " + fil);
+                    i++;
+                }
             }
 
             System.out.println("Digite o numero do item desejado ou q para voltar: ");

@@ -19,11 +19,9 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
-import org.bouncycastle.jcajce.provider.asymmetric.ec.SignatureSpi.ecNR;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import DigitalVault_INF1416.db.KeyChain;
-import DigitalVault_INF1416.db.User;
 
 public class PrivateKeyManager {
     
