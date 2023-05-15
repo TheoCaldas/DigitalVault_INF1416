@@ -34,7 +34,7 @@ public class Main {
     }
 
     public static UIAction hasUsersFlow() throws SQLException, CertificateException {
-        User loggedUser = LoginManager.login();
+        User loggedUser = LoginManager.getInstance().login();
         UIAction userFinalInput = loggedUser == null ? UIAction.STOP_PROGRAM : UIAction.BACK_TO_MENU;
         while(userFinalInput == UIAction.BACK_TO_MENU) {
             if (loggedUser != null) {
