@@ -12,13 +12,13 @@ import DigitalVault_INF1416.db.*;
 import DigitalVault_INF1416.main.UIManager.UIAction;
 
 public class Main {
-    // LogManager.addRegister(1234, email, filename)
     public static void main(String[] args) throws CertificateException, SQLException {
-        LogManager.addRegister(1001, null, null);
         // Inicia BD
         DBQueries.start();
         // Verificacao de usuarios
         System.out.println("Verificando a existência de usuários...");
+
+        LogManager.addRegister(1001, null, null);
         boolean hasUsers;
         try{
             hasUsers = DBQueries.hasUsers();
