@@ -5,6 +5,8 @@ import java.security.cert.*;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.*;
 
+import javax.naming.spi.DirStateFactory.Result;
+
 public class DBQueries {
     private static final String dbName = "cofredigital.db";
     public static final int ADMIN_GID = 0;
@@ -270,5 +272,19 @@ public class DBQueries {
 
         KeyChain crt = new KeyChain(rs);
         return crt;
+    }
+
+    public static User selectAdmin() throws SQLException{
+        Connection conn = getCurrentConnection();
+
+        String query = "SELECT * FROM usuario WHERE gid = ?";
+        PreparedStatement stmt = conn.prepareStatement(query);
+        stmt.setInt(1, ADMIN_GID);
+        ResultSet rs = stmt.executeQuery();
+
+        if (isEmptyResult(rs))
+            return null;
+            
+        return new User(rs);
     }
 }

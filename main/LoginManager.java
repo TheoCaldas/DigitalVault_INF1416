@@ -18,6 +18,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.swing.text.html.HTMLDocument.RunElement;
 
 import org.bouncycastle.crypto.generators.OpenBSDBCrypt;
 // import org.bouncycastle.util.encoders.Base64;
@@ -102,8 +103,8 @@ public class LoginManager {
 
     public boolean firstStep(){
         System.out.print("Email cadastrado: ");
-        String email = "admin@inf1416.puc-rio.br";
-        // String email = scanner.nextLine();
+        // String email = "admin@inf1416.puc-rio.br";
+        String email = scanner.nextLine();
 
         User user = null;
         try {
@@ -146,8 +147,8 @@ public class LoginManager {
     }
 
     protected boolean validatePassword(String userHash){
-        String[] passwords = {"12341234"};
-        // String[] passwords = PasswordManager.passwordInput();
+        // String[] passwords = {"12341234"};
+        String[] passwords = PasswordManager.passwordInput();
 
         for (int i = 0; i < passwords.length; i++) {
             char[] password = passwords[i].toCharArray();
@@ -191,6 +192,7 @@ public class LoginManager {
 
         System.out.println("Token inválido!");
         return false;
+        // return true;
     }
 
     private boolean isUserBlocked(User user){

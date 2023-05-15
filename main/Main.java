@@ -61,7 +61,7 @@ public class Main {
                     case QUERY:
                         System.out.println("\nLendo o cofre");
                         DBQueries.updateUserQueriesCount(loggedUser);
-                        UIAction readVaultAction = VaultManager.readVault(loggedUser);
+                        UIAction readVaultAction = VaultManager.listVault(loggedUser);
                         userFinalInput = readVaultAction;
                         break;
                     case SIGNOUT:

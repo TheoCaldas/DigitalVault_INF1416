@@ -30,17 +30,9 @@ public class UIManager {
         return action;
     }
 
-    public static String[] readVaultFlow(User user) throws CertificateException, SQLException {
+    public static void vaultFlow(User user) throws CertificateException, SQLException {
         header(user);
         body1Queries(user);
-        System.out.println(" ____________________________________");
-        System.out.print("|Caminho da pasta: ");
-        String folderPath = scanner.nextLine();
-        System.out.print("|Frase Secreta: ");
-        String secret = scanner.nextLine();
-
-        String[] inputs = {folderPath, secret};
-        return inputs;
     }
 
     public static UIAction signOutFlow(User user) throws CertificateException, SQLException {
