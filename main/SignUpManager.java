@@ -46,45 +46,47 @@ public class SignUpManager {
     }
 
     private static TempUser createRawUser() {
+        Console console = System.console();
+
         System.out.print("Caminho do arquivo do certificado digital: ");
         String certDig = scanner.nextLine();
 
         System.out.print("Caminho do arquivo da chave privada: ");
         String privateKey = scanner.nextLine();
 
-        System.out.print("Frase secreta: ");
-        String secret = scanner.nextLine();
+        char[] secretChar = console.readPassword("Frase secreta: ");
+        String secret = new String(secretChar);
 
         System.out.print("Grupo(1 - Administrador, 2 - Usuário): ");
         String group_string = scanner.nextLine();
         TempUser.Group group = group_string.equals("1") ? TempUser.Group.ADM : TempUser.Group.USR;
         
-        System.out.print("Senha pessoal: ");
-        String password = scanner.nextLine();
+        char[] passwordChar = console.readPassword("Senha pessoal: ");
+        String password = new String(passwordChar);
 
         while(!isPasswordValid(password)) {
             System.out.println("Digite a senha novamente, a senha deve conter 8, 9 ou 10 caracteres, a senha deve conter apenas digitos de 0 a 9, a senha não deve conter números repetidos em sequência");
-            System.out.print("Senha pessoal: ");
-            password = scanner.nextLine();
+            passwordChar = console.readPassword("Senha pessoal: ");
+            password = new String(passwordChar);
         }
 
-        System.out.print("Confirmação senha pessoal: ");
-        String password_conf = scanner.nextLine();
+        passwordChar = console.readPassword("Confirmacao de senha pessoal: ");
+        String password_conf = new String(passwordChar);
 
         while(!password.equals(password_conf)) {
             System.out.println("As senhas não coincidem :(, insira novamente");
 
-            System.out.print("Senha: ");
-            password = scanner.nextLine();
+            passwordChar = console.readPassword("Senha: ");
+            password = new String(passwordChar);
 
             while(!isPasswordValid(password)) {
                 System.out.println("Digite a senha novamente, a senha deve conter 8, 9 ou 10 caracteres, a senha deve conter apenas digitos de 0 a 9, a senha não deve conter números repetidos em sequência");
-                System.out.print("Senha pessoal: ");
-                password = scanner.nextLine();
+                passwordChar = console.readPassword("Senha pessoal: ");
+                password = new String(passwordChar);
             }
     
-            System.out.print("Confirmação de senha: ");
-            password_conf = scanner.nextLine();
+            passwordChar = console.readPassword("Confirmacao de senha: ");
+            password_conf = new String(passwordChar);
         }
 
         TempUser user = new TempUser(
