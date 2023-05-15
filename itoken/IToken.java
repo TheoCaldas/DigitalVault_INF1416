@@ -3,6 +3,7 @@ package DigitalVault_INF1416.itoken;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
+import java.util.Scanner;
 import DigitalVault_INF1416.main.LoginManager;
 
 public class IToken extends LoginManager{
@@ -12,21 +13,38 @@ public class IToken extends LoginManager{
     }
 
     @Override
-    protected void printHeader(){
-        System.out.println("======APLICATIVO iTOKEN======");
-        System.out.print("Digite 1 para iniciar login - Digite 2 para sair: ");
-    }
+    public void login(){
+        scanner = new Scanner(System.in);
 
-    //TO DO: Change secondeStep
-    @Override
-    public boolean thirdStep() {
         String[] data = readTempFile();
-        // String hash = data[0];
+        String hash = data[0];
         String token = data[1];
 
+        String option = intro();
+        if (option.equals("2")) return;
+        while (!checkPassword(hash)){
+            System.err.println("Senha Inválida!");
+            option = intro();
+            if (option.equals("2")) return;
+        }
+        if (!printToken(token))
+            System.err.println("Falha ao gerar token!");
+    }
+
+    public String intro(){
+        System.out.println("======APLICATIVO iTOKEN======");
+        System.out.print("Digite 1 para acessar - Digite 2 para sair: ");
+        return scanner.nextLine();
+    }
+
+    public boolean checkPassword(String hash) {
+        return validatePassword(hash);
+    }
+
+    public boolean printToken(String token) {
         String decryptedUserToken;
         try {
-            decryptedUserToken = decryptToken(currentUser.token, currentPassword);
+            decryptedUserToken = decryptToken(token, currentPassword);
         } catch (Exception e) {
             System.err.println(e.getMessage());
             System.err.println("Falha ao decriptar semente!");

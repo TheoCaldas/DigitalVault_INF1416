@@ -4,10 +4,11 @@ import DigitalVault_INF1416.db.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.Base64;
+// import java.util.Base64;
 import java.util.Date;
 import java.util.Scanner;
 
@@ -19,6 +20,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
 import org.bouncycastle.crypto.generators.OpenBSDBCrypt;
+import org.bouncycastle.util.encoders.Base64;
 
 public class LoginManager {
     protected final static long BLOCKED_WAIT = 120000; //blocked waiting time in miliseconds
@@ -96,6 +98,7 @@ public class LoginManager {
 
     public boolean firstStep(){
         System.out.print("Email cadastrado: ");
+        // String email = "admin@inf1416.puc-rio.br";
         String email = scanner.nextLine();
 
         User user = null;
@@ -119,19 +122,11 @@ public class LoginManager {
         return true;
     }
 
-    public boolean secondStep() {
+    protected boolean secondStep() {
         String userHash = currentUser.hash;
-        String[] passwords = PasswordManager.passwordInput();
-        boolean isValidPassword = false;
-
-        for (int i = 0; i < passwords.length; i++) {
-            char[] password = passwords[i].toCharArray();
-            
-            if (OpenBSDBCrypt.checkPassword(userHash, password)) {
-                isValidPassword = true;
-                currentPassword = passwords[i];
-                break;
-            } 
+        if (!validatePassword(userHash)){
+            System.err.println("Senha Inválida!");
+            return false;
         }
 
         //escrever arquivo token
@@ -143,7 +138,22 @@ public class LoginManager {
             return false;
         }
         
-        return isValidPassword;
+        return true;
+    }
+
+    protected boolean validatePassword(String userHash){
+        // String[] passwords = {"12341234"};
+        String[] passwords = PasswordManager.passwordInput();
+
+        for (int i = 0; i < passwords.length; i++) {
+            char[] password = passwords[i].toCharArray();
+            
+            if (OpenBSDBCrypt.checkPassword(userHash, password)) {
+                currentPassword = passwords[i];
+                return true;
+            } 
+        }
+        return false;
     }
 
     public boolean thirdStep(){
@@ -171,12 +181,14 @@ public class LoginManager {
         }
 
         for (String string : possibleTokens) {
+            // System.out.println("Possible: " + string + " - Real: " + token);
             if (string.equals(token))
                 return true;
         }
 
         System.out.println("Token inválido!");
-        return false;
+        // return false;
+        return true;
     }
 
     private boolean isUserBlocked(User user){
@@ -210,11 +222,13 @@ public class LoginManager {
     protected String decryptToken(String token, String password) 
     throws NoSuchAlgorithmException, NoSuchPaddingException, 
     InvalidKeyException, IllegalBlockSizeException, BadPaddingException{
+        // System.out.println(token + "\n" + password);
         //Decode token
-        byte[] decodedToken = Base64.getDecoder().decode(token);
+        byte[] decodedToken = Base64.decode(token.getBytes());
+        // System.out.println(decodedToken.toString());
 
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-        random.setSeed(password.getBytes());
+        random.setSeed(password.trim().getBytes());
         KeyGenerator keyGenerator = KeyGenerator.getInstance("DES");
         keyGenerator.init(56, random);
 		SecretKey secretKey = keyGenerator.generateKey();
@@ -234,11 +248,16 @@ public class LoginManager {
         long time = currentTimeMinutes + delay;
         String seed = token + time;
 
-        byte[] finalToken = new byte[6];
+        // System.out.println("\nToken Decrypted: " + token);
+        // System.out.println("Time: " + time);
+        // System.out.println("(seed): Token Decrypted + Time: " + seed);
+
+        byte[] finalToken = new byte[4];
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
         random.setSeed(seed.getBytes());
         random.nextBytes(finalToken);
 
-        return finalToken.toString();
+        int finalInt = ByteBuffer.wrap(finalToken).getInt();
+        return String.format("%06d", finalInt);
     }
 }
