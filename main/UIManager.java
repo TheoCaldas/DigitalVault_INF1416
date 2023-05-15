@@ -24,7 +24,7 @@ public class UIManager {
     public static UIAction UserFlow1(User user) throws CertificateException, SQLException {
         header(user);
         body1Access(user);
-        UIAction action = body2User(user);
+        UIAction action = body2User();
         return action;
     }
 
@@ -43,7 +43,7 @@ public class UIManager {
     public static UIAction signOutFlow(User user) throws CertificateException, SQLException {
         header(user);
         body1Access(user);
-        UIAction action = body2SignOut();
+        UIAction action = body2SignOut(user);
         return action;
     }
 
