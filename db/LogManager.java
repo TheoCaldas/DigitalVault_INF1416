@@ -41,7 +41,7 @@ public class LogManager {
         Collections.sort(registers, new RegisterComparator());
         FileWriter writer = new FileWriter("log.txt");
         for (Register register: registers){
-            writer.write(Register.dateToString(register.date) + ": " + register.log + "\n");
+            writer.write(Register.dateToString(register.date) + " - " + register.log + "\n");
         }
         writer.close();
     }

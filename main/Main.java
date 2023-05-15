@@ -36,7 +36,7 @@ public class Main {
         } else {
             // Cadastro admin
             System.out.println("Nenhum usuário! Por favor, cadastre o administrador.");
-            SignUpManager.signUp();
+            SignUpManager.signUp(null);
         }
         LogManager.addRegister(1002, null, null);
     }
@@ -65,16 +65,19 @@ public class Main {
     
                 switch (userAction) {
                     case SIGNUP:
-                        UIAction signUpAction = SignUpManager.signUp();
+                        LogManager.addRegister(5002, loggedUser.email, null);
+                        UIAction signUpAction = SignUpManager.signUp(loggedUser);
                         userFinalInput = signUpAction;
                         break;
                     case QUERY:
+                        LogManager.addRegister(5003, loggedUser.email, null);
                         System.out.println("\nLendo o cofre");
                         DBQueries.updateUserQueriesCount(loggedUser);
                         UIAction readVaultAction = VaultManager.listVault(loggedUser);
                         userFinalInput = readVaultAction;
                         break;
                     case SIGNOUT:
+                        LogManager.addRegister(5004, loggedUser.email, null);
                         UIAction signOutAction = UIManager.signOutFlow(loggedUser);
                         userFinalInput = signOutAction;
                         LogManager.addRegister(1004, loggedUser.email, null);
