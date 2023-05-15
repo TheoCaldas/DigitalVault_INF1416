@@ -21,16 +21,22 @@ import org.bouncycastle.crypto.generators.OpenBSDBCrypt;
 
 public class SignUpManager {
     private static Scanner scanner;
-
-    public static UIAction signUp(){
+    private static User adminRef;
+    public static UIAction signUp(User admin){
+        adminRef = admin;
         scanner = new Scanner(System.in);
         while (true){
             System.out.println("======TELA DE CADASTRO======");
+            LogManager.addRegister(6001, (adminRef == null) ? null : adminRef.email, null);
             
             System.out.print("Digite 1 para iniciar cadastro - Digite 2 para voltar: ");
             String option = scanner.nextLine();
 
-            if (option.equals("2")) return UIAction.BACK_TO_MENU;
+            if (option.equals("2")) {
+                LogManager.addRegister(6010, (adminRef == null) ? null : adminRef.email, null);
+                return UIAction.BACK_TO_MENU;
+            }
+            LogManager.addRegister(6002, (adminRef == null) ? null : adminRef.email, null);
 
             TempUser user = createRawUser();
             if (saveUser(user)){
@@ -63,6 +69,7 @@ public class SignUpManager {
         String password = new String(passwordChar);
 
         while(!isPasswordValid(password)) {
+            LogManager.addRegister(6003, (adminRef == null) ? null : adminRef.email, null);
             System.out.println("Digite a senha novamente, a senha deve conter 8, 9 ou 10 caracteres, a senha deve conter apenas digitos de 0 a 9, a senha não deve conter números repetidos em sequência");
             passwordChar = console.readPassword("Senha pessoal: ");
             password = new String(passwordChar);
@@ -78,6 +85,7 @@ public class SignUpManager {
             password = new String(passwordChar);
 
             while(!isPasswordValid(password)) {
+                LogManager.addRegister(6003, (adminRef == null) ? null : adminRef.email, null);
                 System.out.println("Digite a senha novamente, a senha deve conter 8, 9 ou 10 caracteres, a senha deve conter apenas digitos de 0 a 9, a senha não deve conter números repetidos em sequência");
                 passwordChar = console.readPassword("Senha pessoal: ");
                 password = new String(passwordChar);
@@ -104,6 +112,7 @@ public class SignUpManager {
         try{
             cert = CertificateManager.getCertificate(user.crtPath);
         }catch (Exception e){
+            LogManager.addRegister(6004, (adminRef == null) ? null : adminRef.email, null);
             System.err.println(e.getMessage());
             System.err.println("Certificado Inválido");
             return false;
@@ -120,7 +129,11 @@ public class SignUpManager {
         System.out.print("\nConfirma Dados (1 - Sim, 2 - Não): ");
         String confirm = scanner.nextLine();
 
-        if (!confirm.equals("1")) return false;
+        if (!confirm.equals("1")){
+            LogManager.addRegister(6009, (adminRef == null) ? null : adminRef.email, null);
+            return false;
+        } 
+        LogManager.addRegister(6008, (adminRef == null) ? null : adminRef.email, null);
         
         //verificar se email ja foi tomado
         try {
@@ -139,15 +152,21 @@ public class SignUpManager {
         try{
             privateKey = PrivateKeyManager.getPrivateKey(user.privateKeyPath, user.secret);
             encryptedPK = PrivateKeyManager.getEncryptedPK(user.privateKeyPath);
+        }  catch (IOException e) {
+            System.err.println("Caminho para chave privada inválido");
+            LogManager.addRegister(6005, (adminRef == null) ? null : adminRef.email, null);
+            return false;
         } catch (Exception e) {
             System.err.println(e.getMessage());
-            System.err.println("Caminho para chave privada inválido OU frase secreta errada!");
+            LogManager.addRegister(6006, (adminRef == null) ? null : adminRef.email, null);
+            System.err.println("Frase secreta errada!");
             return false;
         }
 
         //validar chave com certificado
         try {
             if (!validateKeys(cert, privateKey)){
+                LogManager.addRegister(6007, (adminRef == null) ? null : adminRef.email, null);
                 System.err.println("Chave privada não compatível com certificado!");
                 return false;
             }
