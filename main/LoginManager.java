@@ -37,7 +37,7 @@ public class LoginManager {
 
     private static LoginManager instance = null;
 
-    private final static boolean DEBUG_MODE = false;
+    private final static boolean DEBUG_MODE = true;
 
     protected LoginManager() {}
 

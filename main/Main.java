@@ -4,6 +4,7 @@
  */
 package DigitalVault_INF1416.main;
 
+import java.io.Console;
 import java.security.cert.CertificateException;
 import java.sql.SQLException;
 
@@ -26,10 +27,11 @@ public class Main {
         }
 
         if(hasUsers) {
-           UIAction action = hasUsersFlow();
-           while(action != UIAction.STOP_PROGRAM) {
-                action = hasUsersFlow();
-           }
+            askAdminPK();
+            UIAction action = hasUsersFlow();
+            while(action != UIAction.STOP_PROGRAM) {
+                    action = hasUsersFlow();
+            }
         } else {
             // Cadastro admin
             System.out.println("Nenhum usuário! Por favor, cadastre o administrador.");
@@ -79,5 +81,11 @@ public class Main {
             }
         }
         return userFinalInput;
+    }
+
+    private static void askAdminPK(){
+        Console console = System.console();
+        char[] adminSecret = console.readPassword("Entre com a frase secreta do admin: ");
+        VaultManager.ADMIN_SECRET = new String(adminSecret);
     }
 }
