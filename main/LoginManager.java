@@ -68,22 +68,48 @@ public class LoginManager {
             if (option.equals("2")) return null;
 
             if (step1Check || (step1Check = firstStep())){
+                LogManager.addRegister(2002, null, null);
                 if (step2Check || (step2Check = secondStep())){
                     if (thirdStep()){
+                        LogManager.addRegister(4002, currentUser.email, null)
                         System.out.println("Login realizado!");
                         break;
                     }
-                    else
+                    else {
                         error3Count++;
-                }else
+                        if(error3Count == 1) {
+                            LogManager.addRegister(4004, currentUser.email, null);
+                        } 
+                        if(error3Count == 2) {
+                            LogManager.addRegister(4005, currentUser.email, null);
+                        }
+                        if(error3Count == 3) {
+                            LogManager.addRegister(4006, currentUser.email, null);
+                        }
+                    }
+                }else {
                     error2Count++;
+                    if(error2Count == 1) {
+                        LogManager.addRegister(3004, currentUser.email, null);
+                    } 
+                    if(error2Count == 2) {
+                        LogManager.addRegister(3005, currentUser.email, null);
+                    }
+                    if(error2Count == 3) {
+                        LogManager.addRegister(3006, currentUser.email, null);
+                    }
+                }
+                    
             }
 
             if (error2Count >= 3){ 
                 if (!blockUser(currentUser)) //bloqueia usuario
                     System.err.println("Falha ao bloquear usuário!");
-                else
+                else {
+                    LogManager.addRegister(3007, currentUser.email, null);
                     System.err.println("3 falhas consecutivas. Usuário bloqueado!");
+                }
+                    
                 error2Count = 0;
                 step1Check = false;
             }
@@ -91,8 +117,10 @@ public class LoginManager {
             if (error3Count >= 3){ 
                 if (!blockUser(currentUser)) //bloqueia usuario
                     System.err.println("Falha ao bloquear usuário!");
-                else
+                else {
                     System.err.println("3 falhas consecutivas. Usuário bloqueado!");
+                    LogManager.addRegister(4007, currentUser.email, null);
+                }
                 error3Count = 0;
                 error2Count = 0;
                 step1Check = false;
@@ -112,6 +140,7 @@ public class LoginManager {
     }
 
     public boolean firstStep(){
+        LogManager.addRegister(2001, null, null);
         System.out.print("Email cadastrado: ");
         // String email = "admin@inf1416.puc-rio.br";
         String email = scanner.nextLine();
@@ -119,16 +148,19 @@ public class LoginManager {
         User user = null;
         try {
             user = DBQueries.selectUser(email);
+            LogManager.addRegister(2003, user.email, null);
         } catch (Exception e) {
             System.err.println(e.getMessage());
             System.err.println("Erro ao buscar por email!");
         }
         if (user == null){
             System.err.println("Email não cadastrado!");
+            LogManager.addRegister(2005, email, null);
             return false;
         }
 
         if (isUserBlocked(user)){
+            LogManager.addRegister(2004, user.email, null);
             long waitSeconds = (BLOCKED_WAIT - elapsedMiliseconds) / 1000;
             System.err.println("Usuário está bloqueado! Tente novamente em " + waitSeconds + " segundos.");
             return false;
@@ -139,11 +171,15 @@ public class LoginManager {
     }
 
     protected boolean secondStep() {
+        LogManager.addRegister(3001, currentUser.email, null);
         String userHash = currentUser.hash;
         if (!validatePassword(userHash)){
             System.err.println("Senha Inválida!");
+            LogManager.addRegister(3002, currentUser.email, null);
             return false;
         }
+        LogManager.addRegister(3002, currentUser.email, null);
+        LogManager.addRegister(3003, currentUser.email, null);
 
         //escrever arquivo token
         try {
@@ -173,6 +209,7 @@ public class LoginManager {
     }
 
     public boolean thirdStep(){
+        LogManager.addRegister(4001, currentUser.email, null);
         System.out.print("Entre com o token gerado pelo aplicativo iToken: ");
         String token = scanner.next();
 
@@ -198,6 +235,7 @@ public class LoginManager {
 
         for (String string : possibleTokens) {
             if (string.equals(token))
+                LogManager.addRegister(4003, currentUser.email, null);
                 return true;
         }
 

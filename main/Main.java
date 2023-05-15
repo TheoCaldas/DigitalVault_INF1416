@@ -12,10 +12,11 @@ import DigitalVault_INF1416.db.*;
 import DigitalVault_INF1416.main.UIManager.UIAction;
 
 public class Main {
+    // LogManager.addRegister(1234, email, filename)
     public static void main(String[] args) throws CertificateException, SQLException {
+        LogManager.addRegister(1001, null, null);
         // Inicia BD
         DBQueries.start();
-
         // Verificacao de usuarios
         System.out.println("Verificando a existência de usuários...");
         boolean hasUsers;
@@ -37,13 +38,16 @@ public class Main {
             System.out.println("Nenhum usuário! Por favor, cadastre o administrador.");
             SignUpManager.signUp();
         }
+        LogManager.addRegister(1002, null, null);
     }
 
     public static UIAction hasUsersFlow() throws SQLException, CertificateException {
         User loggedUser = LoginManager.getInstance().login();
         UIAction userFinalInput = loggedUser == null ? UIAction.STOP_PROGRAM : UIAction.BACK_TO_MENU;
+        if(loggedUser != null) LogManager.addRegister(5001, currentUser.email, null);
         while(userFinalInput == UIAction.BACK_TO_MENU) {
             if (loggedUser != null) {
+                LogManager.addRegister(1003, loggedUser.email, null);
                 DBQueries.updateUserLoginCount(loggedUser);
     
                 UIAction userAction = UIAction.INVALID_INPUT;
@@ -73,6 +77,7 @@ public class Main {
                     case SIGNOUT:
                         UIAction signOutAction = UIManager.signOutFlow(loggedUser);
                         userFinalInput = signOutAction;
+                        LogManager.addRegister(1004, loggedUser.email, null);
                         break;
                     default:
                         userFinalInput = UIAction.BACK_TO_MENU;
