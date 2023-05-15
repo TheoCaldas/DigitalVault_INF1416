@@ -18,7 +18,7 @@ public class Main {
         }
 
         if(hasUsers) {
-            LoginManager.login();
+            LoginManager.getInstance().login();
         } else {
             // Cadastro admin
             System.out.println("Nenhum usuário! Por favor, cadestre o administrador.");

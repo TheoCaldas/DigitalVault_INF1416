@@ -2,20 +2,45 @@ package DigitalVault_INF1416.main;
 
 import DigitalVault_INF1416.db.*;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.Date;
 import java.util.Scanner;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 
 import org.bouncycastle.crypto.generators.OpenBSDBCrypt;
 
 public class LoginManager {
-    private final static long BLOCKED_WAIT = 120000; //blocked waiting time in miliseconds
+    protected final static long BLOCKED_WAIT = 120000; //blocked waiting time in miliseconds
+    protected final static String TEMP_FILENAME = "token.txt";
 
-    private static Scanner scanner;
-    private static long elapsedMiliseconds;
-    private static User currentUser;
-    
+    protected Scanner scanner;
+    protected long elapsedMiliseconds;
+    protected User currentUser;
+    protected String currentPassword;
 
-    public static void login(){
+    private static LoginManager instance = null;
+
+    protected LoginManager() {}
+
+    public static LoginManager getInstance() {
+        if (instance == null) {
+            instance = new LoginManager();
+        }
+        return instance;
+    }
+
+    public void login(){
         scanner = new Scanner(System.in);
         int error2Count = 0; //count of failed logins on step 2
         int error3Count = 0; //count of failed logins on step 3
@@ -23,9 +48,7 @@ public class LoginManager {
         boolean step2Check = false; //has passed on step 2
 
         while (true){
-            System.out.println("======TELA DE LOGIN======");
-            
-            System.out.print("Digite 1 para iniciar login - Digite 2 para voltar: ");
+            printHeader();
             String option = scanner.nextLine();
 
             if (option.equals("2")) break;
@@ -51,11 +74,27 @@ public class LoginManager {
                 step1Check = false;
             }
 
+            if (error3Count >= 3){ 
+                if (!blockUser(currentUser)) //bloqueia usuario
+                    System.err.println("Falha ao bloquear usuário!");
+                else
+                    System.err.println("3 falhas consecutivas. Usuário bloqueado!");
+                error3Count = 0;
+                error2Count = 0;
+                step1Check = false;
+                step2Check = false;
+            }
+
             System.out.println("\n\nLogin não realizado. Tente novamente.\n");
         }
     }
 
-    public static boolean firstStep(){
+    protected void printHeader(){
+        System.out.println("======TELA DE LOGIN======");
+        System.out.print("Digite 1 para iniciar login - Digite 2 para voltar: ");
+    }
+
+    public boolean firstStep(){
         System.out.print("Email cadastrado: ");
         String email = scanner.nextLine();
 
@@ -80,7 +119,7 @@ public class LoginManager {
         return true;
     }
 
-    public static boolean secondStep() {
+    public boolean secondStep() {
         String userHash = currentUser.hash;
         String[] passwords = PasswordManager.passwordInput();
         boolean isValidPassword = false;
@@ -90,19 +129,57 @@ public class LoginManager {
             
             if (OpenBSDBCrypt.checkPassword(userHash, password)) {
                 isValidPassword = true;
+                currentPassword = passwords[i];
                 break;
             } 
         }
 
+        //escrever arquivo token
+        try {
+            writeTempFile(currentUser.hash, currentUser.token);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            System.err.println("Falha ao escrever token.txt");
+            return false;
+        }
         
         return isValidPassword;
     }
 
-    public static boolean thirdStep(){
-        return true;
+    public boolean thirdStep(){
+        System.out.print("Entre com o token gerado pelo aplicativo iToken: ");
+        String token = scanner.nextLine();
+
+        String decryptedUserToken;
+        try {
+            decryptedUserToken = decryptToken(currentUser.token, currentPassword);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            System.err.println("Falha ao decriptar semente!");
+            return false;
+        } 
+
+        String[] possibleTokens = new String[3];
+        try {
+            possibleTokens[0] = generateFinalToken(decryptedUserToken, 0);
+            possibleTokens[1] = generateFinalToken(decryptedUserToken, 1);
+            possibleTokens[2] = generateFinalToken(decryptedUserToken, -1);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            System.err.println("Falha ao gerar tokens!");
+            return false;
+        }
+
+        for (String string : possibleTokens) {
+            if (string.equals(token))
+                return true;
+        }
+
+        System.out.println("Token inválido!");
+        return false;
     }
 
-    private static boolean isUserBlocked(User user){
+    private boolean isUserBlocked(User user){
         if (user.blocked == null)
             return false;
         Date nowDate = new Date();
@@ -113,7 +190,7 @@ public class LoginManager {
         return true;
     }
 
-    private static boolean blockUser(User user) {
+    private boolean blockUser(User user) {
         Date nowDate = new Date();
         try {
             return DBQueries.blockUser(user, nowDate);
@@ -121,5 +198,47 @@ public class LoginManager {
             System.err.println(e.getMessage());
             return false;
         }
+    }
+    
+    private void writeTempFile(String hash, String token) throws IOException{
+        FileWriter writer = new FileWriter(TEMP_FILENAME);
+        writer.write(hash + "\n");
+        writer.write(token);
+        writer.close();
+    }
+
+    protected String decryptToken(String token, String password) 
+    throws NoSuchAlgorithmException, NoSuchPaddingException, 
+    InvalidKeyException, IllegalBlockSizeException, BadPaddingException{
+        //Decode token
+        byte[] decodedToken = Base64.getDecoder().decode(token);
+
+        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+        random.setSeed(password.getBytes());
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("DES");
+        keyGenerator.init(56, random);
+		SecretKey secretKey = keyGenerator.generateKey();
+
+        //Decrypt token with key
+        Cipher cipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey);
+        byte[] decryptedToken = cipher.doFinal(decodedToken);
+
+        return decryptedToken.toString();
+    }
+
+    protected String generateFinalToken(String token, int deltaMinutes) throws NoSuchAlgorithmException{
+        final long miliToMinutes = 60000;
+        long delay = deltaMinutes * miliToMinutes;
+        long currentTimeMinutes = (System.currentTimeMillis() / miliToMinutes) * miliToMinutes;
+        long time = currentTimeMinutes + delay;
+        String seed = token + time;
+
+        byte[] finalToken = new byte[6];
+        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+        random.setSeed(seed.getBytes());
+        random.nextBytes(finalToken);
+
+        return finalToken.toString();
     }
 }

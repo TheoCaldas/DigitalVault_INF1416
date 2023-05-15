@@ -160,6 +160,15 @@ public class SignUpManager {
             return false;
         } 
 
+        // //escrever arquivo token
+        // try {
+        //     writeToken(email, hash, token);
+        // } catch (Exception e) {
+        //     System.err.println(e.getMessage());
+        //     System.err.println("Falha ao escrever token.txt");
+        //     return false;
+        // }
+
         //salvar tudo no BD
         try {
             saveData(email, hash, privateKey, token, user.group, cert);
