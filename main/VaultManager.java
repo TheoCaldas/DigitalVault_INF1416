@@ -94,11 +94,17 @@ public class VaultManager {
             String userEmail = info[2];
             String group = info[3];
 
+            LogManager.addRegister(7010, user.email, codeName);
+
             if (!userEmail.equals(user.email)){
                 System.out.println("Sem acesso!");
+                LogManager.addRegister(7012, user.email, codeName);
                 continue;
             }
             byte[] result = readVault(user, folderPath, codeName, secret);
+            LogManager.addRegister(7011, user.email, codeName);
+            LogManager.addRegister(7013, user.email, codeName);
+            LogManager.addRegister(7014, user.email, codeName);
             System.out.println("Arquivo secreto lido!");
             try {
                 Files.write(Paths.get(secretName), result);
@@ -125,10 +131,12 @@ public class VaultManager {
 
             if (file == null) {
                 LogManager.addRegister(6007, user.email, null);
+                LogManager.addRegister(7015, user.email, filename);
                 return null;
             };
             return file;
         } catch (Exception e) {
+            LogManager.addRegister(7016, user.email, filename);
             System.out.println("Impossível acessar pasta");
             LogManager.addRegister(7004, user.email, null);
             return null;
