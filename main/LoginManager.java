@@ -55,7 +55,7 @@ public class LoginManager {
         }
     }
 
-    public static User firstStep(){
+    public static boolean firstStep(){
         System.out.print("Email cadastrado: ");
         String email = scanner.nextLine();
 
@@ -80,25 +80,14 @@ public class LoginManager {
         return true;
     }
 
-    public static boolean secondStep(){
-        System.out.println("2 step failed!");
-        return false;
-    }
-
-    public static boolean thirdStep(){
-        return true;
-    }
-
-        return user;
-    }
-
-    public static boolean secondStep(User user) {
+    public static boolean secondStep() {
+        String userHash = currentUser.hash;
         String[] passwords = PasswordManager.passwordInput();
         boolean isValidPassword = false;
 
         for (int i = 0; i < passwords.length; i++) {
             char[] password = passwords[i].toCharArray();
-            String userHash = user.hash;
+            
             if (OpenBSDBCrypt.checkPassword(userHash, password)) {
                 isValidPassword = true;
                 break;
@@ -109,11 +98,28 @@ public class LoginManager {
         return isValidPassword;
     }
 
-    // private static String getHash(String hash) {
-    //     String[] parts = hash.split("\\$");
-    //     System.out.println(Arrays.toString(parts));
-    //     String hashSalt = parts[3];
-    //     String decodedHash = "$" + parts[1] + "$" + parts[2] + "$" + Base64.getDecoder().decode(hashSalt).toString();
-    //     return decodedHash;
-    // }
+    public static boolean thirdStep(){
+        return true;
+    }
+
+    private static boolean isUserBlocked(User user){
+        if (user.blocked == null)
+            return false;
+        Date nowDate = new Date();
+        Date blockedDate = user.blocked;
+        elapsedMiliseconds = (nowDate.getTime() - blockedDate.getTime());
+        if (elapsedMiliseconds > BLOCKED_WAIT)
+            return false;
+        return true;
+    }
+
+    private static boolean blockUser(User user) {
+        Date nowDate = new Date();
+        try {
+            return DBQueries.blockUser(user, nowDate);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            return false;
+        }
+    }
 }
