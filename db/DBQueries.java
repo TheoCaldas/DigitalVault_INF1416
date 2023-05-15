@@ -93,12 +93,11 @@ public class DBQueries {
         //registro
         sql = "CREATE TABLE IF NOT EXISTS registro (\n"  
                 + " rid integer PRIMARY KEY,\n"  
-                + " date text\n"  
-                + " email text\n"  
-                + " filename text\n" 
-                + " mid integer\n"
-                + " FOREIGN KEY (uid) REFERENCES usuario(uid),\n" 
-                + " FOREIGN KEY (mid) REFERENCES mensagem(mid),\n" 
+                + " date text,\n"  
+                + " email text,\n"  
+                + " filename text,\n" 
+                + " mid integer,\n"
+                + " FOREIGN KEY (mid) REFERENCES mensagem(mid)\n" 
                 + ");";  
         DBManager.createNewTable(conn, dbName, sql);
     }
@@ -132,14 +131,14 @@ public class DBQueries {
     }
 
     public static void insertRegister(int rid, String date, int mid, String email, String filname) throws SQLException{
-        String sql = "INSERT INTO registro(rid, date, mid, email, filename) VALUES(?,?,?,?,?)";  
+        String sql = "INSERT INTO registro(rid, date, email, filename, mid) VALUES(?,?,?,?,?)";  
         Connection conn = getCurrentConnection(); 
         PreparedStatement pstmt = conn.prepareStatement(sql);  
         pstmt.setInt(1, rid);  
         pstmt.setString(2, date);
-        pstmt.setInt(3, mid);
-        pstmt.setString(4, (email == null) ? "" : email);
-        pstmt.setString(5, (filname == null) ? "" : filname);
+        pstmt.setString(3, (email == null) ? " " : email);
+        pstmt.setString(4, (filname == null) ? " " : filname);
+        pstmt.setInt(5, mid);
         pstmt.executeUpdate();  
     }
     
