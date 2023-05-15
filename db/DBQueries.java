@@ -12,8 +12,8 @@ public class DBQueries {
     public static void main(String[] args) {  
         start();
         try{
-            selectAll();
-            // selectAllUsers();
+            // selectAll();
+            selectAllUsers();
         }catch(SQLException e){
             System.err.println(e.getMessage());
         }
@@ -202,5 +202,18 @@ public class DBQueries {
         if (isEmptyResult(rs))
             return null;
         return new User(rs);
+    }
+
+    //return if user was blocked
+    public static boolean blockUser(User user, java.util.Date nowDate) throws SQLException{
+        Connection conn = getCurrentConnection();
+        String sql = "UPDATE usuario SET blocked = ? WHERE uid = ?";
+
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, User.dateToString(nowDate));
+        pstmt.setInt(2, user.uid);
+
+        int rowsUpdated = pstmt.executeUpdate();
+        return (rowsUpdated > 0);
     }
 }
