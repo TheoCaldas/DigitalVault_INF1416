@@ -267,7 +267,7 @@ public class LoginManager {
         random.setSeed(seed.getBytes());
         random.nextBytes(finalToken);
 
-        int finalInt = ByteBuffer.wrap(finalToken).getInt();
+        int finalInt = Math.abs(ByteBuffer.wrap(finalToken).getInt());
         return String.format("%06d", finalInt);
     }
 }
