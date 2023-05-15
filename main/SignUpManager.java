@@ -32,7 +32,10 @@ public class SignUpManager {
             System.out.print("Digite 1 para iniciar cadastro - Digite 2 para voltar: ");
             String option = scanner.nextLine();
 
-            if (option.equals("2")) return UIAction.BACK_TO_MENU;
+            if (option.equals("2")) {
+                LogManager.addRegister(6010, (adminRef == null) ? null : adminRef.email, null);
+                return UIAction.BACK_TO_MENU;
+            }
             LogManager.addRegister(6002, (adminRef == null) ? null : adminRef.email, null);
 
             TempUser user = createRawUser();
@@ -126,7 +129,11 @@ public class SignUpManager {
         System.out.print("\nConfirma Dados (1 - Sim, 2 - Não): ");
         String confirm = scanner.nextLine();
 
-        if (!confirm.equals("1")) return false;
+        if (!confirm.equals("1")){
+            LogManager.addRegister(6009, (adminRef == null) ? null : adminRef.email, null);
+            return false;
+        } 
+        LogManager.addRegister(6008, (adminRef == null) ? null : adminRef.email, null);
         
         //verificar se email ja foi tomado
         try {
