@@ -234,9 +234,10 @@ public class LoginManager {
         }
 
         for (String string : possibleTokens) {
-            if (string.equals(token))
+            if (string.equals(token)){
                 LogManager.addRegister(4003, currentUser.email, null);
                 return true;
+            }
         }
 
         System.out.println("Token inválido!");
